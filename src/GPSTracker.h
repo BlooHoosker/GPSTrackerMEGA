@@ -219,7 +219,7 @@ private:
     * Returns true on sucess
     * Returns false if GPS is off/no GPS fix/error
     */ 
-    bool getGPSPosition(char * lattitude, char * longitude, size_t size);
+    bool getGPSPosition(char * latitude, char * longitude, size_t size);
 
     int8_t getGPSAccuracy();
 
@@ -254,7 +254,7 @@ private:
     * Returns true on success
     * Returns false on wrong format
     */ 
-    bool parseGPSPosition(const char * CGNSINF, char * lattitude, char * longitude, size_t bufferSize);
+    bool parseGPSPosition(const char * CGNSINF, char * latitude, char * longitude, size_t bufferSize);
 
     int8_t parseGPSAccuracy(const char * CGNSINF);
 

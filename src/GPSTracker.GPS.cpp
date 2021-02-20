@@ -32,7 +32,7 @@ int8_t GPSTracker::getGPSPowerStatus(){
     return parseGPSPowerStatus(buffer);
 }
 
-bool GPSTracker::getGPSPosition(char * lattitude, char * longitude, size_t bufferSize){
+bool GPSTracker::getGPSPosition(char * latitude, char * longitude, size_t bufferSize){
 
     char buffer[TRACKER_BUFFER_SIZE];
 
@@ -51,7 +51,7 @@ bool GPSTracker::getGPSPosition(char * lattitude, char * longitude, size_t buffe
     }
 
     // Parsing GPS position
-    if(parseGPSPosition(buffer, lattitude, longitude, bufferSize)){
+    if(parseGPSPosition(buffer, latitude, longitude, bufferSize)){
         return true;
     } else {
         return false;
@@ -149,9 +149,9 @@ bool GPSTracker::parseGPSValue(const char * CGNSINF, uint8_t valuePosition, char
     return true;
 }
 
-bool GPSTracker::parseGPSPosition(const char * CGNSINF, char * lattitude, char * longitude, size_t bufferSize){
+bool GPSTracker::parseGPSPosition(const char * CGNSINF, char * latitude, char * longitude, size_t bufferSize){
 
-    if (!parseGPSValue(CGNSINF, 3, lattitude, bufferSize)){
+    if (!parseGPSValue(CGNSINF, 3, latitude, bufferSize)){
         Serial.println("Failed to parse latitude");
         return false;
     }
