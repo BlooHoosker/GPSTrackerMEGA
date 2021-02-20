@@ -32,29 +32,28 @@ int8_t GPSTracker::getGPSPowerStatus(){
     return parseGPSPowerStatus(buffer);
 }
 
-bool GPSTracker::getGPSPosition(char * lattitude, char * longitude, size_t size){
+bool GPSTracker::getGPSPosition(char * lattitude, char * longitude, size_t bufferSize){
 
     char buffer[TRACKER_BUFFER_SIZE];
 
     if (!getGPSInfo(buffer, TRACKER_BUFFER_SIZE)) return false;
 
+    Serial.print(buffer);
+
     // Checking GPS power status
     if (parseGPSPowerStatus(buffer) != 1){
-        Serial.println("Wrong format1");
         return false;
     }
 
     // Checking GPS fix status
     if (parseGPSFixStatus(buffer) != 1) {
-        Serial.println("Wrong format2");
         return false;
     }
 
     // Parsing GPS position
-    if(parseGPSPosition(buffer, lattitude, longitude, size)){
+    if(parseGPSPosition(buffer, lattitude, longitude, bufferSize)){
         return true;
     } else {
-        Serial.println("Wrong format3");
         return false;
     }
 }
@@ -88,69 +87,79 @@ bool  GPSTracker::getGPSInfo(char * buffer, size_t bufferSize){
     return true;
 }
 
-bool GPSTracker::parseGPSPosition(const char * CGNSINF, char * lattitude, char * longitude, size_t bufferSize){
+bool GPSTracker::parseGPSValue(const char * CGNSINF, uint8_t valuePosition, char * value, uint8_t valueSize){
 
     uint8_t length = strlen(CGNSINF);
-    uint8_t index = 0;
-    uint8_t positionIndex = 0;
-    uint8_t delimiter;
+    const char prefix[] = "+CGNSINF: ";
+    uint8_t prefixLength = strlen(prefix);
+    uint8_t position = 0;
 
-    memset(lattitude, 0, bufferSize);
-    memset(longitude, 0, bufferSize);
-
-    // Latitude after 3rd ','
-    // Reaches third ','
-    delimiter = 3;
-    for (index = 0; index < length; index++){
-        if (CGNSINF[index] == ',') delimiter--;
-        if (!delimiter) break;
-    }
-
-    // Check if third',' is reached
-    if (delimiter){
+    // Checking if length of CGNSINF sequence is longer than prefix
+    if (length <= prefixLength){
+        Serial.println("Wrong format");
         return false;
     }
 
-    index++;
-    // Copy latitude to *latitude until ',' is reached
-    for (; index < length; index++){
-        // If ending ',' is reached exit cycle
-        if (CGNSINF[index] == ',') break;
-
-        // If latitude is longer than buffer size return false
-        if (positionIndex >= bufferSize) return false;
-        lattitude[positionIndex] = CGNSINF[index];
-        positionIndex++;
-    }
-    
-    // Add '\0' at the end
-    if (positionIndex >= bufferSize) return false;
-    lattitude[positionIndex] = '\0';
-
-    // If char at current position isn't ',' 
-    // Means format is incorrect
-    if (CGNSINF[index] != ',') return false;
-
-    index++;
-    positionIndex = 0;
-    // Copy longitude to *longitude until ',' is reached
-    for (; index < length; index++){
-        // If ending ',' is reached exit cycle
-        if (CGNSINF[index] == ',') break;
-
-        // If longitude is longer than buffer size return false
-        if (positionIndex >= bufferSize) return false;
-        longitude[positionIndex] = CGNSINF[index];
-        positionIndex++;
+    // Checking if prefix is correct
+    if (strncmp(CGNSINF, prefix, prefixLength) != 0){
+        Serial.println("Wrong AT sequence");
+        return false;
     }
 
-    // Add '\0' at the end
-    if (positionIndex >= bufferSize) return false;
-    longitude[positionIndex] = '\0';
+    // Reaches requested position in sequence
+    uint8_t index;
+    for (index = prefixLength; index < length; index++){
+        if (CGNSINF[index] == ',') position++;
+        if (position == valuePosition) break;
+    }
 
-    // If char at current position isn't ',' 
-    // Means format is incorrect
-    if (CGNSINF[index] != ',') return false;
+    // Checks if position was reached
+    if (position != valuePosition) {
+        Serial.println("Failed to reach requested position");
+        return false;
+    }
+
+    memset(value, 0, valueSize);
+
+    // If position is not 0 then move by one character to avoid ','
+    if (valuePosition) index++;
+
+    uint8_t valueIndex = 0;
+    for (; index < length; index++){
+        if (CGNSINF[index] == ',' || CGNSINF[index] == '\r') break;
+        
+        if (valueIndex >= valueSize){
+            Serial.println("Value larger than buffer size1");
+            return false;
+        } 
+        value[valueIndex] = CGNSINF[index];
+        valueIndex++;
+    }
+
+    // Checks if correct end was reached
+    if (CGNSINF[index] != ',' && CGNSINF[index] != '\r') return false;
+
+    // Adds \0 at the end
+    if (valueIndex >= valueSize){
+        Serial.println("Value larger than buffer size2");
+        return false;
+    } 
+    value[valueIndex] = '\0';
+
+    return true;
+}
+
+bool GPSTracker::parseGPSPosition(const char * CGNSINF, char * lattitude, char * longitude, size_t bufferSize){
+
+    if (!parseGPSValue(CGNSINF, 3, lattitude, bufferSize)){
+        Serial.println("Failed to parse latitude");
+        return false;
+    }
+
+    if (!parseGPSValue(CGNSINF, 4, longitude, bufferSize)){
+        Serial.println("Failed to parse latitude");
+        return false;
+    }
 
     return true;
 }
@@ -161,31 +170,18 @@ int8_t  GPSTracker::parseGPSAccuracy(const char * CGNSINF){
 
 int8_t  GPSTracker::parseGPSFixStatus(const char * CGNSINF){
 
-    uint8_t length = strlen(CGNSINF);
-    uint8_t index = 0;
-    uint8_t delimiter;
+    char status[2] = "\0";
 
-    // Latitude after 3rd ','
-    // Reaches third ','
-    delimiter = 1;
-    for (index = 0; index < length; index++){
-        if (CGNSINF[index] == ',') delimiter--;
-        if (!delimiter) break;
+    if (!parseGPSValue(CGNSINF, 1, status, 2)){
+        Serial.println("Failed to parse power status");
+        return false;
     }
 
-    // Check if first ',' is reached
-    if (delimiter){
-        return -1;
-    }
-
-    index++;
-    if (index >= length) return false;
-
-    // Return status of GPS fix
+    // Return GPS power status
     // -1 in case of error
-    if (CGNSINF[index] == '0') {
+    if (status[0] == '0') {
         return 0;
-    } else if (CGNSINF[index] == '1'){
+    } else if (status[0] == '1'){
         return 1;
     } else {
         return -1;
@@ -194,29 +190,18 @@ int8_t  GPSTracker::parseGPSFixStatus(const char * CGNSINF){
 
 int8_t GPSTracker::parseGPSPowerStatus(const char * CGNSINF){
 
-    uint8_t length = strlen(CGNSINF);
-    uint8_t index = 0;
-    uint8_t delimiter;
+    char status[2] = "\0";
 
-    // Latitude after 3rd ','
-    // Reaches third ','
-    delimiter = 1;
-    for (index = 0; index < length; index++){
-        if (CGNSINF[index] == ',') delimiter--;
-        if (!delimiter) break;
+    if (!parseGPSValue(CGNSINF, 0, status, 2)){
+        Serial.println("Failed to parse power status");
+        return false;
     }
-
-    // Check if first ',' is reached
-    if (delimiter) return -1;
-
-    index--;
-    if (index < 0) return -1;
 
     // Return GPS power status
     // -1 in case of error
-    if (CGNSINF[index] == '0') {
+    if (status[0] == '0') {
         return 0;
-    } else if (CGNSINF[index] == '1'){
+    } else if (status[0] == '1'){
         return 1;
     } else {
         return -1;

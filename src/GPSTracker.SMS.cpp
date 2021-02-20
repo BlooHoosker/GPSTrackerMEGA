@@ -83,6 +83,7 @@ void GPSTracker::ATSMS(const char * ATCMTI){
 
     if (sprintf(buffer, "+CMGR=%d", index) <= 0){
         // TODO what to do in this case
+        return;
     }
 
     // Send AT to request SMS at index AT+CMGR=index
@@ -90,27 +91,32 @@ void GPSTracker::ATSMS(const char * ATCMTI){
 
     // Wait for CMGR reply
     memset(buffer, 0, TRACKER_BUFFER_SIZE);
-    Serial.println("Waiting for CMGR reply");
-    if (!waitFor(buffer, TRACKER_BUFFER_SIZE, 5000, "+CMGR")){
-        Serial.println("SMS didnt arrive");
+    if (!waitFor(buffer, TRACKER_BUFFER_SIZE, 5*TRACKER_SECOND, "+CMGR")){
+        Serial.println("Failed to receive SMS AT sequence");
         // TODO what to do in this case
+        return;
     }
 
     // Parsing phone number from CMGR
     if (!parseSMSPhoneNumber(buffer, phoneNumber, TRACKER_PHONE_NUBER_SIZE)){
         Serial.println("Failed to parse phone number");
         // TODO what to do in this case
+        return;
     }
       
     // Waiting for actual SMS text
     memset(buffer, 0, TRACKER_BUFFER_SIZE);
-    Serial.println("Waiting for SMS text");
     if (!receiveAT(buffer, TRACKER_BUFFER_SIZE, TRACKER_DEFAULT_TIMEOUT)){
         Serial.println("Failed to receive sms text");
         // TODO what to do in this case
+        return;
     }
 
-    waitFor("OK");
+    if (!waitFor("OK")){
+        Serial.println("Failed to receive OK");
+        // TODO what to do in this case
+        return;
+    }
 
     // TODO check master number
 
@@ -120,7 +126,8 @@ void GPSTracker::ATSMS(const char * ATCMTI){
     // Get which command SMS text contains
     switch(decodeSMSText(buffer)){
         case 0: //LOCATION
-            sendSMS("LOCATION", "+420732885552");
+            sendSMS("LOCATION", phoneNumber);
+            Serial.println("Reply sent");
             break;
         case 1: // STATUS
             break;
@@ -137,16 +144,13 @@ void GPSTracker::ATSMS(const char * ATCMTI){
 int GPSTracker::decodeSMSText(const char *SMSTEXT){
 
     if (!strcmp(SMSTEXT, "LOCATION")){
-        Serial.println("Received LOCATION command");
         return 0;
     }
 
     if (!strcmp(SMSTEXT, "STATUS")){
-        Serial.println("Received STATUS command");
         return 1;
     }
 
-    Serial.println("Recieved unknown command");
     return -1;
 }
 
@@ -164,34 +168,39 @@ bool GPSTracker::sendSMS(const char * text, const char * phoneNumber){
     char buffer[TRACKER_BUFFER_SIZE];
     memset(buffer, 0, TRACKER_BUFFER_SIZE);
 
-    Serial.println("Checking length");
+    // Checking length, max SMS length is 160
     if (strlen(text) > 160){
-        Serial.println("SMS text too long");
+        Serial.println("SMS text is too long");
         return false;
     }
 
-    sprintf(buffer, "+CMGS=\"%s\"", phoneNumber);
+    // Creating AT command sequence
+    if (sprintf(buffer, "+CMGS=\"%s\"", phoneNumber) <= 0){
+        Serial.println("Failed to create CMGS sequence");
+        return false;
+    }
 
-    //Serial.println(buffer);
-    Serial.println("Sending SMS number");
+    // Send command and wait for "> " promt
+    // Timeout 60s as per documentation
     sendAT(buffer);
-    Serial.println("Waiting promt..");
     if(!waitForPromt(60L*TRACKER_SECOND)){
-        Serial.println("No promt");
+        Serial.println("Failed to receive SMS text promt");
         return false;
     }
 
-    Serial.println("Promt recieved. Writing SMS..");
+    // Write SMS text ending with ctrl+z character
     _serialPort->write(text);
     _serialPort->write(0x1A);
 
     if(!waitFor("+CMGS", 60L*TRACKER_SECOND)){
-        Serial.println("No confirmation response");
+        Serial.println("Failed to receive SMS text confirmation");
         return false;
     }
 
-    Serial.println("Confirmation recieved");
-    waitFor("OK");
+    if (!waitFor("OK")){
+        Serial.println("Failed to receive OK");
+        return false;
+    }
 
     return true;
 }

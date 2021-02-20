@@ -232,6 +232,12 @@ private:
     */ 
     int8_t getGPSFixStatus();
 
+    /*
+    * Parses value from GPS info sequence on valuePosition place (starting from 0)
+    * Buffer "value" is of size "valueSize" and should be large enough to fit falue
+    */ 
+    bool parseGPSValue(const char * CGNSINF, uint8_t valuePosition, char * value, uint8_t valueSize);
+
     /* 
     * Parses GPS power status from GNSS (CGNSINF) sequence
     * Returns power status, -1 on wrong format

@@ -35,7 +35,7 @@ bool GPSTracker::powered(){
 
 	readNext(buffer, TRACKER_BUFFER_SIZE, &timeout, '\n');
 
-	if (compareAT(buffer, "\r\n" || compareAT(buffer, "AT") || compareAT(buffer, "OK") || compareAT(buffer, "ERROR")){
+	if (compareAT(buffer, "\r\n") || compareAT(buffer, "AT") || compareAT(buffer, "OK") || compareAT(buffer, "ERROR")){
 		return true;
 	}
 

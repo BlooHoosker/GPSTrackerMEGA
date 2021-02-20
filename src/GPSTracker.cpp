@@ -6,7 +6,7 @@ void GPSTracker::test(){
     memset(buffer, 0, TRACKER_BUFFER_SIZE);
 	char lattitude[TRACKER_PHONE_NUBER_SIZE];
 	char longitude[TRACKER_PHONE_NUBER_SIZE];
-
+	
 	if(!powerGPS(true)){
 		Serial.println("GPS Failed to enable");
 		return;
@@ -30,7 +30,7 @@ void GPSTracker::test(){
 		Serial.println(getGPSPowerStatus());
 		Serial.print("Fix status: ");
 		Serial.println(getGPSFixStatus());
-		if (getGPSPosition(lattitude, longitude, TRACKER_BUFFER_SIZE)){
+		if (getGPSPosition(lattitude, longitude, TRACKER_PHONE_NUBER_SIZE)){
 			Serial.println(lattitude);
 			Serial.println(longitude);
 		} else {

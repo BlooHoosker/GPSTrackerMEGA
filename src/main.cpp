@@ -25,9 +25,8 @@ void setup() {
 char trackerReceiveBuffer[TRACKER_BUFFER_SIZE];
 void loop() {
 
-  
   Serial.println("Testing..");
-  //tracker.test();
+  tracker.test();
   while (1);
 
   Serial.println("Receiving command");
