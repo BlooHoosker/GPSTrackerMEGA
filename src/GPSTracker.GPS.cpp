@@ -64,6 +64,12 @@ int8_t GPSTracker::getGPSFixStatus(){
 
     if (!getGPSInfo(buffer, TRACKER_BUFFER_SIZE)) return -1;
 
+    // Checking GPS power status
+    // TODO check if this is good idea to return 0
+    if (parseGPSPowerStatus(buffer) != 1){
+        return 0;
+    }
+
     return parseGPSFixStatus(buffer);
 }
 
@@ -124,6 +130,7 @@ bool GPSTracker::parseGPSValue(const char * CGNSINF, uint8_t valuePosition, char
     // If position is not 0 then move by one character to avoid ','
     if (valuePosition) index++;
 
+    // Copy value to buffer
     uint8_t valueIndex = 0;
     for (; index < length; index++){
         if (CGNSINF[index] == ',' || CGNSINF[index] == '\r') break;

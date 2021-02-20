@@ -13,8 +13,9 @@ class GPSTracker
 {
 public:
 
-    // Method for testing
+    // Methods for testing
     void test();
+    void printStatus();
 
     // Provide reset and power pin
     GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN);
@@ -175,6 +176,8 @@ private:
     */
     bool sendSMS(const char * text, const char * phoneNumber);
 
+    bool deleteAllSMS();
+
     /*
     * Support method for sending SMS
     * Basically waits until module sends "> " 
@@ -182,7 +185,7 @@ private:
     */ 
     bool waitForPromt(uint16_t timeout);
 
-    void userGPSPower(const char * SMSGPSCommand);
+    void userGPSPower(const char * SMSGPSPower, const char * phoneNumb);
 
     void userLocation();
 

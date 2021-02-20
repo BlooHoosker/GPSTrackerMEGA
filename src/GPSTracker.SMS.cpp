@@ -126,18 +126,22 @@ void GPSTracker::ATSMS(const char * ATCMTI){
     // Get which command SMS text contains
     switch(decodeSMSText(buffer)){
         case 0: //LOCATION
-            sendSMS("LOCATION", phoneNumber);
-            Serial.println("Reply sent");
+            Serial.println("LOCATION COMMAND");
+            sendSMS("LOCATION", _phoneNum);
             break;
         case 1: // STATUS
             break;
         case 2: // GPS ON/OFF
-            userGPSPower(buffer);
+            Serial.println("GPS POWER COMMAND");
+            userGPSPower(buffer, _phoneNum);
             break;
-        default:
-            // TODO Send error to user
+        default: // Unknown command
+            Serial.println("UNKNOWN COMMAND");
             break;
     }
+
+    // Deletes all SMS messages to keep free space
+    deleteAllSMS();
 
 }
 
@@ -149,6 +153,10 @@ int GPSTracker::decodeSMSText(const char *SMSTEXT){
 
     if (!strcmp(SMSTEXT, "STATUS")){
         return 1;
+    }
+
+    if (compareAT(SMSTEXT, "GPS POWER:")){
+        return 2;
     }
 
     return -1;
@@ -197,6 +205,9 @@ bool GPSTracker::sendSMS(const char * text, const char * phoneNumber){
         return false;
     }
 
+    // receiveAT(buffer, TRACKER_BUFFER_SIZE, TRACKER_DEFAULT_TIMEOUT);
+    // Serial.print(buffer);
+
     if (!waitFor("OK")){
         Serial.println("Failed to receive OK");
         return false;
@@ -229,4 +240,14 @@ bool GPSTracker::waitForPromt(uint16_t timeout){
     }
 
     return false;
+}
+
+bool GPSTracker::deleteAllSMS(){
+
+    sendAT("+CMGDA=\"DEL ALL\"");
+    if (!waitFor("OK", TRACKER_SECOND*25)){
+        return false;
+    }
+
+    return true;
 }

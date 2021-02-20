@@ -13,11 +13,13 @@ uint16_t GPSTracker::receiveAT(char * buffer, size_t size, uint16_t timeout){
     uint16_t length = 0;
 
     // Waits until more than 2 characters are received. That is to filter out blank commands
-    while (length <= 2){
-        timeout = TRACKER_DEFAULT_TIMEOUT;
-        Serial.println("Waiting for AT");
+    Serial.println("Waiting for AT");
+    while (length <= 2 && timeout){
         length = readNext(buffer, size, &timeout, '\n');
     }
+    
+    if (length <= 2) return 0;
+
     return length;
 }
 

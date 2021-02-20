@@ -1,43 +1,25 @@
 #include <GPSTracker.h>
 
-void GPSTracker::test(){
-
+void GPSTracker::printStatus(){
 	char buffer[TRACKER_BUFFER_SIZE];
-    memset(buffer, 0, TRACKER_BUFFER_SIZE);
 	char latitude[TRACKER_PHONE_NUBER_SIZE];
 	char longitude[TRACKER_PHONE_NUBER_SIZE];
 
-	if(!powerGPS(true)){
-		Serial.println("GPS Failed to enable");
-		return;
+	Serial.print("Power status: ");
+	Serial.println(getGPSPowerStatus());
+	Serial.print("Fix status: ");
+	Serial.println(getGPSFixStatus());
+	if (getGPSPosition(latitude, longitude, TRACKER_PHONE_NUBER_SIZE)){
+		Serial.println(latitude);
+		Serial.println(longitude);
+	} else {
+		Serial.println("Fail");
 	}
+}
 
-	Serial.println("GPS on");
-	// delay(5000);
-	// sendAT("+CGNSSEQ=GGA");
-	// if(!waitFor(buffer, TRACKER_BUFFER_SIZE, TRACKER_DEFAULT_TIMEOUT, "+CGNSREQ")){
-	// 	Serial.println("Nothing received");
-	// }
-	// waitFor("OK");
-	while (1){
-		// sendAT("+CGNSSEQ?");
-		// if(!waitFor(buffer, TRACKER_BUFFER_SIZE, TRACKER_DEFAULT_TIMEOUT, "+CGNSREQ")){
-		// 	Serial.println("Nothing received");
-		// }
-		// waitFor("OK");
-		// Serial.print(buffer);
-		Serial.print("Power status: ");
-		Serial.println(getGPSPowerStatus());
-		Serial.print("Fix status: ");
-		Serial.println(getGPSFixStatus());
-		if (getGPSPosition(latitude, longitude, TRACKER_PHONE_NUBER_SIZE)){
-			Serial.println(latitude);
-			Serial.println(longitude);
-		} else {
-			Serial.println("Fail");
-		}
-		delay(2000);
-	}
+void GPSTracker::test(){
+
+
 }
 
 GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN){
@@ -47,6 +29,7 @@ GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN){
     digitalWrite(_resetPin, HIGH);
     pinMode(_powerPin, OUTPUT);
     digitalWrite(_powerPin, LOW);
+	strcpy(_phoneNum, "+420732885552");
 }
 
 GPSTracker::~GPSTracker(){}
@@ -132,6 +115,18 @@ bool GPSTracker::init(){
 	sendAT("+CPMS=\"ME\",\"ME\",\"ME\"");
 	if(!waitFor("OK")){
 		Serial.println("Failed to set storage");
+		return false;
+	}
+
+	// sendAT("+CNMI=0");
+	// if(!waitFor("OK")){
+	// 	Serial.println("Failed to set new SMS mode");
+	// 	return false;
+	// }
+
+	Serial.println("Deleting SMS");
+	if (!deleteAllSMS()){
+		Serial.println("Failed to receive OK delsms");
 		return false;
 	}
 
