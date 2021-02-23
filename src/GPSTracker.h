@@ -4,7 +4,7 @@
 #include <SoftwareSerial.h>
 #include <Stream.h>
 
-#define TRACKER_BUFFER_SIZE 128
+#define TRACKER_BUFFER_SIZE 256
 #define TRACKER_PHONE_NUBER_SIZE 32
 #define TRACKER_DEFAULT_TIMEOUT 2000
 #define TRACKER_SECOND 1000
@@ -39,20 +39,16 @@ public:
     
     void processAT(const char *ATCommand);
 
-    /*
-    * Parses sender's phone number from +CMGR sequence
-    * Sequence must be in correct +CMGR format which is for example:
-    * +CMGR: "REC READ","+420123456789","","20/12/20,01:59:44+04"
-    * Returns true on success
-    * Returns false on wrong format
-    */
-    bool parseSMSPhoneNumber(const char * ATCMGR, char * numberBuffer, size_t numberBufferSize);
 private:
 
     Stream* _serialPort;
     uint8_t _resetPin;
     uint8_t _powerPin;
-    char _phoneNum[TRACKER_PHONE_NUBER_SIZE];
+    char _phoneNumber[TRACKER_PHONE_NUBER_SIZE];
+    char _latitude[TRACKER_PHONE_NUBER_SIZE];
+    char _longitude[TRACKER_PHONE_NUBER_SIZE];
+    uint8_t _powerStatus;
+    uint8_t _fixStatus;
 
     /*
     * Powers up module
@@ -150,6 +146,15 @@ private:
     int8_t parseSMSIndex(const char *ATCMTI);
 
     /*
+    * Parses sender's phone number from +CMGR sequence
+    * Sequence must be in correct +CMGR format which is for example:
+    * +CMGR: "REC READ","+420123456789","","20/12/20,01:59:44+04"
+    * Returns true on success
+    * Returns false on wrong format
+    */
+    bool parseSMSPhoneNumber(const char * ATCMGR, char * numberBuffer, size_t numberBufferSize);
+
+    /*
     * Procedure for processing received SMS after CMTI sequence is received
     * indicating new message is received
     */
@@ -176,6 +181,16 @@ private:
     */
     bool sendSMS(const char * text, const char * phoneNumber);
 
+    /*
+    * Reads SMS in module's storage at smsIndex
+    * Message text is stored in "text" which is of size "textSize"
+    * Phone number of the message is stored in "phoneNumber" which is of size "phoneNumSize"
+    * Returns true on success
+    * Returns false on failure or timeout
+    */ 
+    bool readSMS(uint8_t smsIndex, char * text, char * phoneNumber, size_t textSize, size_t phoneNumSize);
+
+    // Deletes all SMS messages stored in module's storage
     bool deleteAllSMS();
 
     /*
@@ -185,11 +200,31 @@ private:
     */ 
     bool waitForPromt(uint16_t timeout);
 
-    void userGPSPower(const char * SMSGPSPower, const char * phoneNumb);
+    /* 
+    * User command routine that enables/disables GPS
+    * SMSGPSPower: SMS command from user
+    * Command format: "GPS POWER: 0/1"
+    * On success sends message to user with GPS power status
+    * On failure sends error message to user
+    */ 
+    void userGPSPower(const char * SMSGPSPower);
 
+    /*
+    * Sends user current location as a google maps link
+    * In case of disabled GPS or no fix, sends last known location
+    */ 
     void userLocation();
 
+    /*
+    * Sends user current device status information
+    * In case of disabled GPS or no fix, sends last known position
+    */
     void userStatus();
+
+    /*
+    * Gets current data from GPS and updates internal variables
+    */ 
+    void updateGPSStatusInfo();
 
     /*
     * Powers up/down GPS

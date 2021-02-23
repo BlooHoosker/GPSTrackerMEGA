@@ -29,17 +29,16 @@ void loop() {
   // tracker.test();
   // while (1);
 
-  Serial.println("Receiving command");
+  Serial.println("Receiving...");
 
-  memset(trackerReceiveBuffer, 0, TRACKER_BUFFER_SIZE);
-  tracker.receiveAT(trackerReceiveBuffer, TRACKER_BUFFER_SIZE, TRACKER_DEFAULT_TIMEOUT);
-  
-  Serial.print(trackerReceiveBuffer);
-
-  tracker.processAT(trackerReceiveBuffer);  
+  if (tracker.receiveAT(trackerReceiveBuffer, TRACKER_BUFFER_SIZE, TRACKER_DEFAULT_TIMEOUT)){
+    Serial.print(trackerReceiveBuffer);
+    tracker.processAT(trackerReceiveBuffer);  
+  }
 
   tracker.printStatus(); 
-
+  
+  Serial.println();
   delay(100);
 }
 

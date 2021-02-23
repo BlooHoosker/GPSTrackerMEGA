@@ -23,6 +23,24 @@ bool GPSTracker::powerGPS(bool on){
     return true;
 }
 
+//+CGNSINF: 1,1,20210218230108.000,50.468168,13.421028,385.700,3.39,209.6,1,,5.0,5.1,1.0,,9,3,,,27,,
+bool  GPSTracker::getGPSInfo(char * buffer, size_t bufferSize){
+
+    // Send AT requesting GPS information sequence
+    sendAT("+CGNSINF");
+    if(!waitFor(buffer, bufferSize, TRACKER_DEFAULT_TIMEOUT, "+CGNSINF")){
+        Serial.println("Failed to receive reply");
+        return false;
+    }
+
+    if (!waitFor("OK")){
+        Serial.println("Failed to receive OK");
+        return false;
+    }
+
+    return true;
+}
+
 int8_t GPSTracker::getGPSPowerStatus(){
 
     char buffer[TRACKER_BUFFER_SIZE];
@@ -71,26 +89,6 @@ int8_t GPSTracker::getGPSFixStatus(){
     }
 
     return parseGPSFixStatus(buffer);
-}
-
-//+CGNSINF: 1,1,20210218230108.000,50.468168,13.421028,385.700,3.39,209.6,1,,5.0,5.1,1.0,,9,3,,,27,,
-bool  GPSTracker::getGPSInfo(char * buffer, size_t bufferSize){
-
-    memset(buffer, 0, bufferSize);
-
-    // Send AT requesting GPS information sequence
-    sendAT("+CGNSINF");
-    if(!waitFor(buffer, bufferSize, TRACKER_DEFAULT_TIMEOUT, "+CGNSINF")){
-        Serial.println("Failed to receive reply");
-        return false;
-    }
-
-    if (!waitFor("OK")){
-        Serial.println("Failed to receive OK");
-        return false;
-    }
-
-    return true;
 }
 
 bool GPSTracker::parseGPSValue(const char * CGNSINF, uint8_t valuePosition, char * value, uint8_t valueSize){
@@ -213,4 +211,50 @@ int8_t GPSTracker::parseGPSPowerStatus(const char * CGNSINF){
     } else {
         return -1;
     } 
+}
+
+void GPSTracker::updateGPSStatusInfo(){
+
+    char latitude[TRACKER_PHONE_NUBER_SIZE];
+    char longitude[TRACKER_PHONE_NUBER_SIZE];
+    char buffer[TRACKER_BUFFER_SIZE];
+
+    int8_t powerStatus = 0;
+    int8_t fixStatus = 0;
+
+    _powerStatus = 0;   
+    _fixStatus = 0;
+
+    if (!getGPSInfo(buffer, TRACKER_BUFFER_SIZE)){
+        Serial.println("Update: Failed to get info");
+        return;
+    }
+
+    powerStatus = parseGPSPowerStatus(buffer);
+    if (powerStatus == -1) {
+        Serial.println("Update: Failed to parse power status");
+        return;        
+    } 
+
+    _powerStatus = powerStatus;
+    if (!powerStatus){
+        return;
+    }
+
+    fixStatus = parseGPSFixStatus(buffer);
+    if (fixStatus == -1){
+        Serial.println("Update: Failed to parse fix status");
+        return;           
+    }
+
+    _fixStatus = fixStatus;
+    if (!fixStatus) return;
+
+    if (!parseGPSPosition(buffer, latitude, longitude, TRACKER_PHONE_NUBER_SIZE)){
+        Serial.println("Update: Failed to parse position");
+        return;
+    }
+
+    strcpy(_latitude, latitude);
+    strcpy(_longitude, longitude);
 }

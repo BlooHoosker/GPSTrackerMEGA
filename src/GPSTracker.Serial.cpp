@@ -90,6 +90,8 @@ size_t GPSTracker::readNext(char * buffer, size_t size, uint16_t * timeout, char
 	size_t i = 0;
 	bool exit = false;
 
+	memset(buffer, 0, size);
+
 	do {
 		while(!exit && i < size - 1 && _serialPort->available()) {
 			char c = _serialPort->read();

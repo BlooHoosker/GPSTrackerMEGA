@@ -1,20 +1,15 @@
 #include <GPSTracker.h>
 
 void GPSTracker::printStatus(){
-	char buffer[TRACKER_BUFFER_SIZE];
-	char latitude[TRACKER_PHONE_NUBER_SIZE];
-	char longitude[TRACKER_PHONE_NUBER_SIZE];
-
+	updateGPSStatusInfo();
 	Serial.print("Power status: ");
-	Serial.println(getGPSPowerStatus());
+	Serial.println(_powerStatus);
 	Serial.print("Fix status: ");
-	Serial.println(getGPSFixStatus());
-	if (getGPSPosition(latitude, longitude, TRACKER_PHONE_NUBER_SIZE)){
-		Serial.println(latitude);
-		Serial.println(longitude);
-	} else {
-		Serial.println("Fail");
-	}
+	Serial.println(_fixStatus);
+	Serial.print("Latitude: ");
+	Serial.println(_latitude);
+	Serial.print("Longitude: ");
+	Serial.println(_longitude);
 }
 
 void GPSTracker::test(){
@@ -29,7 +24,14 @@ GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN){
     digitalWrite(_resetPin, HIGH);
     pinMode(_powerPin, OUTPUT);
     digitalWrite(_powerPin, LOW);
-	strcpy(_phoneNum, "+420732885552");
+
+	strcpy(_phoneNumber, "+420732885552");
+
+	memset(_latitude, 0, TRACKER_PHONE_NUBER_SIZE);
+	memset(_longitude, 0, TRACKER_PHONE_NUBER_SIZE);
+
+	_powerStatus = 0;
+	_fixStatus = 0;
 }
 
 GPSTracker::~GPSTracker(){}
@@ -37,7 +39,6 @@ GPSTracker::~GPSTracker(){}
 bool GPSTracker::start(Stream &serial){
 
     _serialPort = &serial;
-
 
     Serial.println("Powering up..");
     
@@ -97,14 +98,12 @@ bool GPSTracker::init(){
 		return false;
 	}
 
-	Serial.println("Disabling echo..");
 	// Disable echoing of sent commands
 	if (!setEchoMode(false)){
 		Serial.println("Echo not disabled");
         return false;
 	} 
 
-	Serial.println("Echo disabled\nSetting SMS mode..");
 	// Set SMS message format to "Text"
 	if (!setSMSMessageMode(true)) {
 		Serial.println("Failed to set SMS text mode");
@@ -118,13 +117,6 @@ bool GPSTracker::init(){
 		return false;
 	}
 
-	// sendAT("+CNMI=0");
-	// if(!waitFor("OK")){
-	// 	Serial.println("Failed to set new SMS mode");
-	// 	return false;
-	// }
-
-	Serial.println("Deleting SMS");
 	if (!deleteAllSMS()){
 		Serial.println("Failed to receive OK delsms");
 		return false;
