@@ -21,17 +21,17 @@ int8_t GPSTracker::parseSMSIndex(const char * ATCMTI){
 
 int GPSTracker::decodeSMSText(const char *SMSTEXT){
 
-    if (!strcmp(SMSTEXT, "LOCATION")){
-        return 0;
-    }
+    if (!strcmp(SMSTEXT, "LOCATION")) return 0;
 
-    if (!strcmp(SMSTEXT, "STATUS")){
-        return 1;
-    }
+    if (!strcmp(SMSTEXT, "STATUS")) return 1;
+    
+    if (compareAT(SMSTEXT, "GPS POWER:")) return 2;
 
-    if (compareAT(SMSTEXT, "GPS POWER:")){
-        return 2;
-    }
+    if (!strcmp(SMSTEXT, "SET MASTER")) return 3;
+
+    if (!strcmp(SMSTEXT, "RESET MASTER")) return 4;
+
+    if (!strcmp(SMSTEXT, "RESTART")) return 5;
 
     return -1;
 }
@@ -48,11 +48,24 @@ void GPSTracker::ATSMS(const char * ATCMTI){
         return;
     }
 
+    // Read SMS from module storage at index
     if (!readSMS(index, text, phoneNumber, TRACKER_BUFFER_SIZE, TRACKER_PHONE_NUBER_SIZE)){
+        Serial.println("Failed to read SMS");
         return;
     }
 
-    // TODO check master number
+    // If master number is set
+    if (_masterNumberSet){
+        Serial.println("Master set");
+        // Checks if master number and number of received SMS match
+        if (strcmp(phoneNumber, _phoneNumber)) {
+            Serial.println("Not a master number");
+            return;
+        }
+    } else {
+        Serial.println("Master not set");
+        strcpy(_phoneNumber, phoneNumber);
+    }
 
     // Get which command SMS text contains
     switch(decodeSMSText(text)){
@@ -68,9 +81,19 @@ void GPSTracker::ATSMS(const char * ATCMTI){
             Serial.println("GPS POWER");
             userGPSPower(text);
             break;
+        case 3: // SET MASTER NUMBER
+            Serial.println("SET MASTER");
+            userSetMasterNumber(phoneNumber);
+            break;
+        case 4: // SET MASTER NUMBER
+            Serial.println("RESET MASTER");
+            userResetMasterNumber();
+            break;
+        case 5: // RESTART
+            restart();
+            break;
         default: // Unknown command
             Serial.println("UNKNOWN");
-            sendSMS("UNKNOWN COMMAND", _phoneNumber);
             break;
     }
 
@@ -114,8 +137,9 @@ bool GPSTracker::sendSMS(const char * text, const char * phoneNumber){
 
     // Write SMS text ending with ctrl+z character
     _serialPort->write(text);
-    _serialPort->write(0x1A);
+    _serialPort->write((char)0x1A);
 
+    // Waiting for confirmation sequence
     if(!waitFor("+CMGS", 60L*TRACKER_SECOND)){
         Serial.println("Failed to receive SMS text confirmation");
         return false;

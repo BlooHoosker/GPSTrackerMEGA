@@ -1,4 +1,6 @@
 #include <GPSTracker.h>
+#include <EEPROM.h>
+#include <avr/wdt.h>
 
 void GPSTracker::printStatus(){
 	updateGPSStatusInfo();
@@ -6,6 +8,8 @@ void GPSTracker::printStatus(){
 	Serial.println(_powerStatus);
 	Serial.print("Fix status: ");
 	Serial.println(_fixStatus);
+	Serial.print("Master set: ");
+	Serial.println(_masterNumberSet);
 	Serial.print("Latitude: ");
 	Serial.println(_latitude);
 	Serial.print("Longitude: ");
@@ -13,8 +17,7 @@ void GPSTracker::printStatus(){
 }
 
 void GPSTracker::test(){
-
-
+	EEPROM[RESTART_ADDR] = 0;
 }
 
 GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN){
@@ -32,9 +35,20 @@ GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN){
 
 	_powerStatus = 0;
 	_fixStatus = 0;
+	_masterNumberSet = 0;
 }
 
 GPSTracker::~GPSTracker(){}
+
+void GPSTracker::restart(){
+	Serial.println("Restarting");
+	if (!_masterNumberSet){
+		setMasterNumber(_phoneNumber);
+		resetMasterNumber();
+	}
+	EEPROM[RESTART_ADDR] = 0xFF;
+	wdt_enable(WDTO_120MS);
+}
 
 bool GPSTracker::start(Stream &serial){
 
@@ -57,6 +71,24 @@ bool GPSTracker::start(Stream &serial){
         Serial.println("Initialization Failed");
         return false;
     }
+
+	// Check restart flag in EEPROM indicating device powered up after user requested restart
+	if (EEPROM[RESTART_ADDR] == 0xFF){
+		// If master wasn't set before restart
+		if (!_masterNumberSet){
+			// Temporarily setting master number flag so getMasterNumber can be used
+			EEPROM[MASTERSET_ADDR] = 0xFF;
+			getMasterNumber();
+			resetMasterNumber();
+		}
+		sendSMS("RESTART COMPLETE", _phoneNumber);
+		Serial.println("Restart complete");
+		Serial.println(_phoneNumber);
+	}
+	
+	// Resetting restart flag
+	EEPROM.update(RESTART_ADDR, 0);
+
     Serial.println("Initialization Success");
     return true;
 }
@@ -75,6 +107,9 @@ bool GPSTracker::init(){
 	// Reset the module to start clean initialization
 	reset();
 	delay(1000);
+
+	// Load master number from EEPROM
+	getMasterNumber();
 
 	// Send "AT" and wait for "AT" response
 	// If "AT" response is received, reset is complete

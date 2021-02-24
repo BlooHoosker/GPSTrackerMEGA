@@ -68,13 +68,18 @@ void GPSTracker::userStatus(){
 
     char text[TRACKER_BUFFER_SIZE];
     char position[TRACKER_BUFFER_SIZE];
-    char power[TRACKER_PHONE_NUBER_SIZE];
-    char fix[TRACKER_PHONE_NUBER_SIZE];
 
-    memset(power, 0, TRACKER_PHONE_NUBER_SIZE);
-    memset(fix, 0, TRACKER_PHONE_NUBER_SIZE);
     memset(position, 0, TRACKER_BUFFER_SIZE);
     memset(text, 0, TRACKER_BUFFER_SIZE);
+    
+    char power[TRACKER_PHONE_NUBER_SIZE];
+    char fix[TRACKER_PHONE_NUBER_SIZE];
+    char master[TRACKER_PHONE_NUBER_SIZE];
+
+    memset(master, 0, TRACKER_PHONE_NUBER_SIZE); 
+    memset(power, 0, TRACKER_PHONE_NUBER_SIZE);
+    memset(fix, 0, TRACKER_PHONE_NUBER_SIZE);
+
 
     updateGPSStatusInfo();
 
@@ -102,10 +107,37 @@ void GPSTracker::userStatus(){
         }
     }
 
-    sprintf(text, "%s\n%s\n%s", power, fix, position);
+    if (_masterNumberSet){
+        strcpy(master, "MASTER NUM: SET");
+    } else {
+        strcpy(master, "MASTER NUM: NOT SET");
+    }
+
+    sprintf(text, "%s\n%s\n%s\n%s", power, fix, position, master);
 
     Serial.println("STATUS: Sending status info");
     if(!sendSMS(text, _phoneNumber)){
         Serial.println("STATUS: failed to send");
     }
 }
+
+void GPSTracker::userSetMasterNumber(const char * phoneNumber){
+    if (setMasterNumber(phoneNumber)){
+        sendSMS("MASTER NUMBER SET", _phoneNumber);
+    } else {
+        //sendSMS("FAILED TO SET MASTER NUMBER", _phoneNumber);
+    }
+}
+
+void GPSTracker::userResetMasterNumber(){
+    resetMasterNumber();
+    sendSMS("MASTER NUMBER RESET", _phoneNumber);
+}
+
+
+
+
+
+
+
+

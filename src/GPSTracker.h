@@ -1,13 +1,17 @@
 #pragma once
 
 #include <Arduino.h>
-#include <SoftwareSerial.h>
 #include <Stream.h>
 
 #define TRACKER_BUFFER_SIZE 256
 #define TRACKER_PHONE_NUBER_SIZE 32
 #define TRACKER_DEFAULT_TIMEOUT 2000
 #define TRACKER_SECOND 1000
+
+#define RESTART_ADDR 0
+#define MASTERSET_ADDR 1
+#define CRC_ADDR 2
+#define LENGTH_ADDR 3 
 
 class GPSTracker
 {
@@ -44,11 +48,20 @@ private:
     Stream* _serialPort;
     uint8_t _resetPin;
     uint8_t _powerPin;
+
     char _phoneNumber[TRACKER_PHONE_NUBER_SIZE];
     char _latitude[TRACKER_PHONE_NUBER_SIZE];
     char _longitude[TRACKER_PHONE_NUBER_SIZE];
+
     uint8_t _powerStatus;
     uint8_t _fixStatus;
+    uint8_t _masterNumberSet;
+
+    /* 
+    * User induced restart
+    * Retarts device using watchdog and sets restart flag into EEPROM
+    */ 
+    void restart();
 
     /*
     * Powers up module
@@ -220,6 +233,36 @@ private:
     * In case of disabled GPS or no fix, sends last known position
     */
     void userStatus();
+
+    /*
+    * Sets master phone number for the device
+    * After this the device only responds to commands from this number
+    * phoneNumber: phone number to be set as master
+    * Sends reply to user
+    */  
+    void userSetMasterNumber(const char * phoneNumber);
+
+    /*
+    * Resets master phone number
+    * After this the device will react to commands from all numbers
+    */ 
+    void userResetMasterNumber();
+
+    /*
+    * Sets master phone number for the device
+    * Stores it in EEPROM and sets master number flag in EEPROM
+    * phoneNumber: phone number to be set as master
+    */  
+    bool setMasterNumber(const char * phoneNumber);
+
+    // Resets master number flag in EEPROM
+    void resetMasterNumber();
+
+    /*
+    * Loads master number from EEPROM if master flag is set
+    * If CRC doesn't match number will not be loaded
+    */ 
+    void getMasterNumber();
 
     /*
     * Gets current data from GPS and updates internal variables

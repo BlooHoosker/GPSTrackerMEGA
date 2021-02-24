@@ -9,7 +9,11 @@ GPSTracker tracker = GPSTracker(SIM_RST, SIM_PWR);
 void setup() {
   Serial.begin(9600);
   Serial.println("*Starts and cums* uwu");
-  
+
+  // Serial.println("Testing..");
+  // tracker.test();
+  // while(1);
+
   // Start SoftwareSerial before starting tracker
   trackerSerial.begin(SIM808_BAUDRATE);
 
@@ -24,10 +28,6 @@ void setup() {
 
 char trackerReceiveBuffer[TRACKER_BUFFER_SIZE];
 void loop() {
-
-  // Serial.println("Testing..");
-  // tracker.test();
-  // while (1);
 
   Serial.println("Receiving...");
 
