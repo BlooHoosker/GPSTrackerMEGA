@@ -5,32 +5,32 @@ void GPSTracker::userGPSPower(const char * SMSGPSPower){
     unsigned int status = 0;
 
     if(sscanf(SMSGPSPower, "GPS POWER: %u", &status) != 1){
-        Serial.println("Invalid command format");
+        Serial.println("USER POWER: Invalid command format");
         //sendSMS("INVALID COMMAND FORMAT\nCOMMAND SHOULD BE: \"GPS 0/1\"", phoneNum);
         return;
     }
 
     if (status != 0 && status != 1){
-        Serial.println("Invalid command format2");
+        Serial.println("USER POWER: Invalid command format2");
         //sendSMS("INVALID COMMAND FORMAT\nCOMMAND SHOULD BE: \"GPS 0/1\"", phoneNum);
         return;
     }
 
     // TODO check if this works
     if( !powerGPS(status) ) {
-        Serial.println("GPS failed to power up");
+        Serial.println("USER POWER: GPS failed to power up");
         //sendSMS("FAILED SET GPS POWER", phoneNum);
         return;
     };
 
-    Serial.println("GPS POWER: Sending reply");
+    Serial.println("USER POWER: Sending reply");
     if (status){
         if (!sendSMS("GPS POWERED UP", _phoneNumber)){
-            Serial.println("Failed to send sms");
+            Serial.println("USER POWER: Failed to send sms");
         }
     } else {
         if (!sendSMS("GPS POWERED DOWN", _phoneNumber)){
-            Serial.println("Failed to send sms");
+            Serial.println("USER POWER: Failed to send sms");
         }
     }
 }
@@ -57,9 +57,9 @@ void GPSTracker::userLocation(){
         }
     }
 
-    Serial.println("LOCATION: Sending location data");
+    Serial.println("USER LOCATION: Sending location data");
     if(!sendSMS(link, _phoneNumber)){
-        Serial.println("LOCATION: failed to send");
+        Serial.println("USER LOCATION: failed to send");
     }
 
 }
@@ -115,16 +115,18 @@ void GPSTracker::userStatus(){
 
     sprintf(text, "%s\n%s\n%s\n%s", power, fix, position, master);
 
-    Serial.println("STATUS: Sending status info");
+    Serial.println("USER STATUS: Sending status info");
     if(!sendSMS(text, _phoneNumber)){
-        Serial.println("STATUS: failed to send");
+        Serial.println("USER STATUS: failed to send");
     }
 }
 
 void GPSTracker::userSetMasterNumber(const char * phoneNumber){
     if (setMasterNumber(phoneNumber)){
+        Serial.println("USER MASTER SET: Sending reply");
         sendSMS("MASTER NUMBER SET", _phoneNumber);
     } else {
+        Serial.println("USER MASTER SET: Failed");
         //sendSMS("FAILED TO SET MASTER NUMBER", _phoneNumber);
     }
 }

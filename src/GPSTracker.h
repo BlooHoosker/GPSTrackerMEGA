@@ -104,10 +104,11 @@ private:
     bool waitFor(char * buffer, size_t bufferSize, uint16_t timeout, const char * command);
 
     /* 
-    * Reads characters available from serial port until reaches stop char or timeout runs out
+    * Reads an AT command from serial
     * Returns number of characters read including \r\n
+    * Returns 0 if \r\n sequence is not reached or timeout runs out
     */
-    size_t readNext(char *buffer, size_t size, uint16_t *timeout, char stop);
+    size_t readAT(char *buffer, size_t size, uint16_t *timeout);
 
     /*
     * Sets echoing mode of sent AT commands

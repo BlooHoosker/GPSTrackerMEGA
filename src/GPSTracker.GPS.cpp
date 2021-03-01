@@ -29,12 +29,12 @@ bool  GPSTracker::getGPSInfo(char * buffer, size_t bufferSize){
     // Send AT requesting GPS information sequence
     sendAT("+CGNSINF");
     if(!waitFor(buffer, bufferSize, TRACKER_DEFAULT_TIMEOUT, "+CGNSINF")){
-        Serial.println("Failed to receive reply");
+        Serial.println("GPS INFO: Failed to receive reply");
         return false;
     }
 
     if (!waitFor("OK")){
-        Serial.println("Failed to receive OK");
+        Serial.println("GPS INFO: Failed to receive OK");
         return false;
     }
 
@@ -100,13 +100,13 @@ bool GPSTracker::parseGPSValue(const char * CGNSINF, uint8_t valuePosition, char
 
     // Checking if length of CGNSINF sequence is longer than prefix
     if (length <= prefixLength){
-        Serial.println("Wrong format");
+        Serial.println("GPS VALUE: Wrong format");
         return false;
     }
 
     // Checking if prefix is correct
     if (strncmp(CGNSINF, prefix, prefixLength) != 0){
-        Serial.println("Wrong AT sequence");
+        Serial.println("GPS VALUE: Wrong AT sequence");
         return false;
     }
 
@@ -119,7 +119,7 @@ bool GPSTracker::parseGPSValue(const char * CGNSINF, uint8_t valuePosition, char
 
     // Checks if position was reached
     if (position != valuePosition) {
-        Serial.println("Failed to reach requested position");
+        Serial.println("GPS VALUE: Failed to reach requested position");
         return false;
     }
 
@@ -134,7 +134,7 @@ bool GPSTracker::parseGPSValue(const char * CGNSINF, uint8_t valuePosition, char
         if (CGNSINF[index] == ',' || CGNSINF[index] == '\r') break;
         
         if (valueIndex >= valueSize){
-            Serial.println("Value larger than buffer size1");
+            Serial.println("GPS VALUE: Value larger than buffer size1");
             return false;
         } 
         value[valueIndex] = CGNSINF[index];
@@ -146,7 +146,7 @@ bool GPSTracker::parseGPSValue(const char * CGNSINF, uint8_t valuePosition, char
 
     // Adds \0 at the end
     if (valueIndex >= valueSize){
-        Serial.println("Value larger than buffer size2");
+        Serial.println("GPS VALUE: Value larger than buffer size2");
         return false;
     } 
     value[valueIndex] = '\0';
@@ -157,20 +157,16 @@ bool GPSTracker::parseGPSValue(const char * CGNSINF, uint8_t valuePosition, char
 bool GPSTracker::parseGPSPosition(const char * CGNSINF, char * latitude, char * longitude, size_t bufferSize){
 
     if (!parseGPSValue(CGNSINF, 3, latitude, bufferSize)){
-        Serial.println("Failed to parse latitude");
+        Serial.println("GPS POSITION: Failed to parse latitude");
         return false;
     }
 
     if (!parseGPSValue(CGNSINF, 4, longitude, bufferSize)){
-        Serial.println("Failed to parse latitude");
+        Serial.println("GPS POSITION: Failed to parse longitude");
         return false;
     }
 
     return true;
-}
-
-int8_t  GPSTracker::parseGPSAccuracy(const char * CGNSINF){
-
 }
 
 int8_t  GPSTracker::parseGPSFixStatus(const char * CGNSINF){
@@ -178,7 +174,7 @@ int8_t  GPSTracker::parseGPSFixStatus(const char * CGNSINF){
     char status[2] = "\0";
 
     if (!parseGPSValue(CGNSINF, 1, status, 2)){
-        Serial.println("Failed to parse power status");
+        Serial.println("GPS FIX: Failed to parse power status");
         return false;
     }
 
@@ -198,7 +194,7 @@ int8_t GPSTracker::parseGPSPowerStatus(const char * CGNSINF){
     char status[2] = "\0";
 
     if (!parseGPSValue(CGNSINF, 0, status, 2)){
-        Serial.println("Failed to parse power status");
+        Serial.println("GPS POWER: Failed to parse power status");
         return false;
     }
 
@@ -226,13 +222,13 @@ void GPSTracker::updateGPSStatusInfo(){
     _fixStatus = 0;
 
     if (!getGPSInfo(buffer, TRACKER_BUFFER_SIZE)){
-        Serial.println("Update: Failed to get info");
+        Serial.println("UPDATE: Failed to get info");
         return;
     }
 
     powerStatus = parseGPSPowerStatus(buffer);
     if (powerStatus == -1) {
-        Serial.println("Update: Failed to parse power status");
+        Serial.println("UPDATE: Failed to parse power status");
         return;        
     } 
 
@@ -243,7 +239,7 @@ void GPSTracker::updateGPSStatusInfo(){
 
     fixStatus = parseGPSFixStatus(buffer);
     if (fixStatus == -1){
-        Serial.println("Update: Failed to parse fix status");
+        Serial.println("UPDATE: Failed to parse fix status");
         return;           
     }
 
@@ -251,10 +247,16 @@ void GPSTracker::updateGPSStatusInfo(){
     if (!fixStatus) return;
 
     if (!parseGPSPosition(buffer, latitude, longitude, TRACKER_PHONE_NUBER_SIZE)){
-        Serial.println("Update: Failed to parse position");
+        Serial.println("UPDATE: Failed to parse position");
         return;
     }
 
     strcpy(_latitude, latitude);
     strcpy(_longitude, longitude);
 }
+
+int8_t  GPSTracker::parseGPSAccuracy(const char * CGNSINF){
+
+}
+
+

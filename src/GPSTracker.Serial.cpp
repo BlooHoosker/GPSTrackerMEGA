@@ -7,7 +7,7 @@ bool GPSTracker::waitFor(const char *command, uint16_t timeout = TRACKER_DEFAULT
 
 	do {
 		memset(buffer, 0, TRACKER_BUFFER_SIZE);
-		length = readNext(buffer, TRACKER_BUFFER_SIZE, &timeout, '\n');
+		length = readAT(buffer, TRACKER_BUFFER_SIZE, &timeout);
 		if (length > 0){
 
 			/*
@@ -15,16 +15,16 @@ bool GPSTracker::waitFor(const char *command, uint16_t timeout = TRACKER_DEFAULT
 			
 			Serial.print("Length of read received bytes ");
 			Serial.println(length);
-			Serial.print(trackerBuffer);	
+			Serial.print(buffer);	
 
 			
 			Serial.print("Length of command ");
 			Serial.println(strlen(command));
-			Serial.print(command);
+			Serial.println(command);
 
 			
-			for (int i = 0; i < strlen(command); i++ ){
-				Serial.print((uint8_t)trackerBuffer[i]);
+			for (int i = 0; i < strlen(buffer); i++ ){
+				Serial.print((uint8_t)buffer[i]);
 			}
 			Serial.println();
 
@@ -49,7 +49,7 @@ bool GPSTracker::waitFor(char * buffer, size_t bufferSize, uint16_t timeout, con
 
 	do {
 		memset(buffer, 0, bufferSize);
-		length = readNext(buffer, bufferSize, &timeout, '\n');
+		length = readAT(buffer, bufferSize, &timeout);
 		if (length > 0){
 			
 			/*
@@ -85,31 +85,58 @@ bool GPSTracker::waitFor(char * buffer, size_t bufferSize, uint16_t timeout, con
 	return false;
 }
 
-size_t GPSTracker::readNext(char * buffer, size_t size, uint16_t * timeout, char stop)
+size_t GPSTracker::readAT(char * buffer, size_t size, uint16_t * timeout)
 {
 	size_t i = 0;
-	bool exit = false;
+	bool cr = false;
+	bool nl = false;
+	bool end = false;
+	char c = 0;
+
+	// If timeout is NULL returns 0
+	if (!timeout) return 0;
 
 	memset(buffer, 0, size);
 
 	do {
-		while(!exit && i < size - 1 && _serialPort->available()) {
-			char c = _serialPort->read();
+		// Read from serial as long as data is available,
+		// Size is less than buffer size
+		// Terminating sequence \r\n is not reached
+		while(!end && (i < size-2) && _serialPort->available()){
+			c = _serialPort->read();
 			buffer[i] = c;
 			i++;
-			exit |= stop && c == stop;
-		}
-
-		if(timeout) {			
-			if(*timeout) {
-				delay(1);
-				(*timeout)--;
+			// Checking terminating sequence \r\n
+			if (cr){
+				nl = (c == '\n');
+				if (nl) {
+					end = true;
+					break;
+				} else {
+					nl = false;
+					cr = false;
+				}
 			}
-
-			if(!(*timeout)) break;
+			cr = (c == '\r');
 		}
-	} while(!exit && i < size - 1);
 
+		// Check if both terminating characters were reached
+		if (end) {
+			break;
+		}
+
+		if (*timeout){
+			(*timeout)--;
+			delay(1);
+		} else {
+			return 0;
+		}
+
+	} while(!end && i < size - 1);
+
+	if (!end) {
+		return 0;
+	}
 	buffer[i] = '\0';
 
 	return i;

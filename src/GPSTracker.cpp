@@ -17,7 +17,7 @@ void GPSTracker::printStatus(){
 }
 
 void GPSTracker::test(){
-	EEPROM[RESTART_ADDR] = 0;
+	
 }
 
 GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN){
@@ -41,8 +41,10 @@ GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN){
 GPSTracker::~GPSTracker(){}
 
 void GPSTracker::restart(){
-	Serial.println("Restarting");
+	Serial.println("RESTART");
+	// Check if master number is set
 	if (!_masterNumberSet){
+		// If its not set, save phone number to memory to send reply after restart
 		setMasterNumber(_phoneNumber);
 		resetMasterNumber();
 	}
@@ -54,21 +56,21 @@ bool GPSTracker::start(Stream &serial){
 
     _serialPort = &serial;
 
-    Serial.println("Powering up..");
+    Serial.println("START: Powering up..");
     
     // Power on module
     bool powerStatus = powerOn();
 
     if (!powerStatus){
-        Serial.println("Failed to power up");
+        Serial.println("START: Failed to power up");
         return false;
     }
 
-    Serial.println("Initializing..");
+    Serial.println("START: Initializing..");
     
     // Initialize module
     if (!init()) {
-        Serial.println("Initialization Failed");
+        Serial.println("START: Initialization Failed");
         return false;
     }
 
@@ -82,14 +84,12 @@ bool GPSTracker::start(Stream &serial){
 			resetMasterNumber();
 		}
 		sendSMS("RESTART COMPLETE", _phoneNumber);
-		Serial.println("Restart complete");
+		Serial.println("START: Restart complete");
 		Serial.println(_phoneNumber);
 	}
 	
 	// Resetting restart flag
 	EEPROM.update(RESTART_ADDR, 0);
-
-    Serial.println("Initialization Success");
     return true;
 }
 
@@ -101,6 +101,7 @@ bool GPSTracker::start(Stream &serial){
 // Disable ECHO
 // Set SMS text mode
 // Set SMS storage mode to module itself 
+// Delete all stored SMS 
 bool GPSTracker::init(){
 
 	bool received = false;
@@ -135,36 +136,30 @@ bool GPSTracker::init(){
 
 	// Disable echoing of sent commands
 	if (!setEchoMode(false)){
-		Serial.println("Echo not disabled");
+		Serial.println("INIT: Echo not disabled");
         return false;
 	} 
 
 	// Set SMS message format to "Text"
 	if (!setSMSMessageMode(true)) {
-		Serial.println("Failed to set SMS text mode");
+		Serial.println("INIT: Failed to set SMS text mode");
 		return false;
 	}
 
 	// Set storage for SMS to module itself
 	sendAT("+CPMS=\"ME\",\"ME\",\"ME\"");
 	if(!waitFor("OK")){
-		Serial.println("Failed to set storage");
+		Serial.println("INIT: Failed to set storage");
 		return false;
 	}
 
 	if (!deleteAllSMS()){
-		Serial.println("Failed to receive OK delsms");
+		Serial.println("INIT: Failed to receive OK delsms");
 		return false;
 	}
 
 	return true;
 }
 
-void GPSTracker::reset(){
-    digitalWrite(_resetPin, HIGH);
-	delay(10);
-	digitalWrite(_resetPin, LOW);
-	delay(200);
-	digitalWrite(_resetPin, HIGH);
-}
+
 

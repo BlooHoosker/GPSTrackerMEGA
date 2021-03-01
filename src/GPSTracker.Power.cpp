@@ -27,19 +27,23 @@ bool GPSTracker::powerOn(){
 
 bool GPSTracker::powered(){
 	char buffer[TRACKER_BUFFER_SIZE];
-	uint16_t timeout = TRACKER_DEFAULT_TIMEOUT;
-	memset(buffer, 0, TRACKER_BUFFER_SIZE);
-
+	
 	// Send AT and waiting for response
 	sendAT();
 
-	readNext(buffer, TRACKER_BUFFER_SIZE, &timeout, '\n');
+	// Wait for any AT response
+	if (!receiveAT(buffer, TRACKER_BUFFER_SIZE, TRACKER_DEFAULT_TIMEOUT)) return false;
 
-	if (compareAT(buffer, "\r\n") || compareAT(buffer, "AT") || compareAT(buffer, "OK") || compareAT(buffer, "ERROR")){
-		return true;
-	}
+	return true;
+}
 
-	return false;
+// TODO make own version or explain based on doc
+void GPSTracker::reset(){
+    digitalWrite(_resetPin, HIGH);
+	delay(10);
+	digitalWrite(_resetPin, LOW);
+	delay(200);
+	digitalWrite(_resetPin, HIGH);
 }
 
 

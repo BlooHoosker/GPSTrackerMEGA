@@ -12,9 +12,10 @@ uint16_t GPSTracker::receiveAT(char * buffer, size_t size, uint16_t timeout){
     
     uint16_t length = 0;
 
-    // Waits until more than 2 characters are received. That is to filter out blank commands
+    // Waits until more than 2 characters are received. 
+    // That is to filter out blank commands
     while (length <= 2 && timeout){
-        length = readNext(buffer, size, &timeout, '\n');
+        length = readAT(buffer, size, &timeout);
     }
     
     if (length <= 2) return 0;
@@ -48,12 +49,12 @@ void GPSTracker::processAT(const char * ATCommand){
 
     switch (decodeAT(ATCommand)){
         case 0:
-            Serial.println("New SMS");
+            Serial.println("PROCESS AT: New SMS");
             ATSMS(ATCommand);
             break;
         
         default:
-            Serial.println("No command");
+            Serial.println("PROCESS AT: No command");
             break;
     }
 
