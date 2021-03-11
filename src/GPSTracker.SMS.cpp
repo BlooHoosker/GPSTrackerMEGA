@@ -138,27 +138,24 @@ bool GPSTracker::sendSMS(const char * text, const char * phoneNumber){
     // Write SMS text ending with ctrl+z character
     _serialPort->write(text);
     _serialPort->write((char)0x1A);
-
-   
-
-    // Waiting for confirmation sequence
-    while(receiveAT(buffer, TRACKER_BUFFER_SIZE, 60L*TRACKER_SECOND)){ 
-        Serial.print(buffer);
-
-        if (compareAT(buffer, "+CMGS")){
-            break;
-        }
-    }
-
-    if (!compareAT(buffer, "+CMGS")){
-            Serial.println("SEND SMS: Failed to receive SMS text confirmation");
-            return false;
-    }
     
-     //TODO change this to wait
-    // if(!waitFor("+CMGS", 60L*TRACKER_SECOND)){
-    //     Serial.println("SEND SMS: Failed to receive SMS text confirmation");
-    //     return false;
+    // Waiting for confirmation sequence
+    if(!waitFor("+CMGS", 60L*TRACKER_SECOND)){
+        Serial.println("SEND SMS: Failed to receive SMS text confirmation");
+        return false;
+    }
+
+    // while(receiveAT(buffer, TRACKER_BUFFER_SIZE, 60L*TRACKER_SECOND)){ 
+    //     Serial.print(buffer);
+
+    //     if (compareAT(buffer, "+CMGS")){
+    //         break;
+    //     }
+    // }
+
+    // if (!compareAT(buffer, "+CMGS")){
+    //         Serial.println("SEND SMS: Failed to receive SMS text confirmation");
+    //         return false;
     // }
 
     // receiveAT(buffer, TRACKER_BUFFER_SIZE, TRACKER_DEFAULT_TIMEOUT);

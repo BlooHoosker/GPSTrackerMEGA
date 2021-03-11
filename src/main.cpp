@@ -12,7 +12,6 @@ void setup() {
 
   // Serial.println("Testing..");
   // tracker.test();
-  // while(1);
 
   // Start SoftwareSerial before starting tracker
   trackerSerial.begin(SIM808_BAUDRATE);

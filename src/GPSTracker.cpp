@@ -17,7 +17,8 @@ void GPSTracker::printStatus(){
 }
 
 void GPSTracker::test(){
-	
+	resetMasterNumber();
+	while(1);
 }
 
 GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN){
@@ -83,6 +84,7 @@ bool GPSTracker::start(Stream &serial){
 			getMasterNumber();
 			resetMasterNumber();
 		}
+		Serial.println("RESTART: Sending reply");
 		sendSMS("RESTART COMPLETE", _phoneNumber);
 		Serial.println("START: Restart complete");
 		Serial.println(_phoneNumber);

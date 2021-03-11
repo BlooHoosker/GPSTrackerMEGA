@@ -45,13 +45,13 @@ void GPSTracker::userLocation(){
 
     if (_fixStatus){
         if (strlen(_latitude) && strlen(_longitude)){
-            sprintf(link, "LOCATION:\nhttp://maps.google.com/maps?q=%s,%s",_latitude, _longitude);
+            sprintf(link, "LOCATION:\r\nhttp://maps.google.com/maps?q=%s,%s",_latitude, _longitude);
         } else {
             strcpy(link, "LOCATION: NO DATA");
         }
     } else {
         if (strlen(_latitude) && strlen(_longitude)){
-            sprintf(link, "LAST LOCATION:\nhttp://maps.google.com/maps?q=%s,%s",_latitude, _longitude);
+            sprintf(link, "LAST LOCATION:\r\nhttp://maps.google.com/maps?q=%s,%s",_latitude, _longitude);
         } else {
             strcpy(link, "LAST LOCATION: NO DATA");
         }
@@ -113,7 +113,7 @@ void GPSTracker::userStatus(){
         strcpy(master, "MASTER NUM: NOT SET");
     }
 
-    sprintf(text, "%s\n%s\n%s\n%s", power, fix, position, master);
+    sprintf(text, "%s\r\n%s\r\n%s\r\n%s", power, fix, position, master);
 
     Serial.println("USER STATUS: Sending status info");
     if(!sendSMS(text, _phoneNumber)){
