@@ -29,8 +29,7 @@ GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN){
     pinMode(_powerPin, OUTPUT);
     digitalWrite(_powerPin, LOW);
 
-	strcpy(_phoneNumber, "+420732885552");
-
+	memset(_phoneNumber, 0, TRACKER_PHONE_NUBER_SIZE);
 	memset(_latitude, 0, TRACKER_PHONE_NUBER_SIZE);
 	memset(_longitude, 0, TRACKER_PHONE_NUBER_SIZE);
 
