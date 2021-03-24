@@ -255,8 +255,5 @@ void GPSTracker::updateGPSStatusInfo(){
     strcpy(_longitude, longitude);
 }
 
-int8_t  GPSTracker::parseGPSAccuracy(const char * CGNSINF){
-
-}
 
 

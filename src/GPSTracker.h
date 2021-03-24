@@ -34,7 +34,7 @@ public:
     bool start(Stream &serial);
 
     /*
-    * Waits until receives an AT command from module
+    * Waits until receives an AT sequence from module
     * Received command is stored in buffer of size "size"
     * TODO figure out if timeout is necessary
     * Returns length of received command including \r\n
@@ -337,8 +337,6 @@ private:
     * Returns false on wrong format
     */ 
     bool parseGPSPosition(const char * CGNSINF, char * latitude, char * longitude, size_t bufferSize);
-
-    int8_t parseGPSAccuracy(const char * CGNSINF);
 
     /* 
     * Parses GPS fix status from GNSS (CGNSINF) sequence
