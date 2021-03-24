@@ -255,5 +255,3 @@ void GPSTracker::updateGPSStatusInfo(){
     strcpy(_longitude, longitude);
 }
 
-
-
