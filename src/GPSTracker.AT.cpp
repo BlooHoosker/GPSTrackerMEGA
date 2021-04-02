@@ -1,6 +1,6 @@
 #include <GPSTracker.h>
 
-void GPSTracker::sendAT(const char * AT = ""){
+void GPSTracker::sendAT(const char * AT /* = "" */){
     char buffer[TRACKER_BUFFER_SIZE];
     memset(buffer, 0, TRACKER_BUFFER_SIZE);
 

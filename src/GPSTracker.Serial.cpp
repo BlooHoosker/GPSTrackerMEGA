@@ -1,6 +1,6 @@
 #include <GPSTracker.h>
 
-bool GPSTracker::waitFor(const char *command, uint16_t timeout = TRACKER_DEFAULT_TIMEOUT){
+bool GPSTracker::waitFor(const char *command, uint16_t timeout /*= TRACKER_DEFAULT_TIMEOUT*/){
 
 	char buffer[TRACKER_BUFFER_SIZE];
 	uint8_t length = 0;

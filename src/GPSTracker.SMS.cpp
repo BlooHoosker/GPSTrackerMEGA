@@ -157,9 +157,6 @@ bool GPSTracker::sendSMS(const char * text, const char * phoneNumber){
     //         Serial.println("SEND SMS: Failed to receive SMS text confirmation");
     //         return false;
     // }
-
-    // receiveAT(buffer, TRACKER_BUFFER_SIZE, TRACKER_DEFAULT_TIMEOUT);
-    // Serial.print(buffer);
     
     if (!waitFor("OK")){
         Serial.println("SEND SMS: Failed to receive OK");

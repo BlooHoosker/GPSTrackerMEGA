@@ -133,6 +133,7 @@ void GPSTracker::userSetMasterNumber(const char * phoneNumber){
 
 void GPSTracker::userResetMasterNumber(){
     resetMasterNumber();
+    Serial.println("USER MASTER RESET: Sending reply");
     sendSMS("MASTER NUMBER RESET", _phoneNumber);
 }
 
