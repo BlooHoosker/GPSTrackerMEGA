@@ -58,6 +58,7 @@ private:
     uint8_t _powerStatus;
     uint8_t _fixStatus;
     uint8_t _masterNumberSet;
+    uint8_t _mapLinkSrc;
 
     /* 
     * User induced restart
@@ -350,7 +351,7 @@ private:
 
     void setMapLinkSrc(const uint8_t linkSel);
 
-    uint8_t getMapLinkSrc();
+    void getMapLinkSrc();
 
     void userSetMapLinkSrc(const uint8_t linkSel);
 

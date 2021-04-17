@@ -3,8 +3,9 @@
 
 void GPSTracker::setMapLinkSrc(const uint8_t linkSel){   
     EEPROM.update(LINK_SRC_ADDR, linkSel);
+    _mapLinkSrc = linkSel;
 }
 
-uint8_t GPSTracker::getMapLinkSrc(){
-    return EEPROM[LINK_SRC_ADDR];
+void GPSTracker::getMapLinkSrc(){
+    _mapLinkSrc = EEPROM[LINK_SRC_ADDR];
 }

@@ -45,7 +45,7 @@ void GPSTracker::userLocation(){
 
     if (_fixStatus){
         if (strlen(_latitude) && strlen(_longitude)){
-            if (getMapLinkSrc() == 0){
+            if (_mapLinkSrc == 0){
                 sprintf(link, "LOCATION:\r\nhttp://maps.google.com/maps?q=%s,%s",_latitude, _longitude);
             } else {
                 sprintf(link, "LOCATION:\r\nhttps://www.openstreetmap.org/?mlat=%s&mlon=%s",_latitude, _longitude);
@@ -55,7 +55,7 @@ void GPSTracker::userLocation(){
         }
     } else {
         if (strlen(_latitude) && strlen(_longitude)){
-            if (getMapLinkSrc() == 0){
+            if (_mapLinkSrc == 0){
                 sprintf(link, "LAST LOCATION:\r\nhttp://maps.google.com/maps?q=%s,%s",_latitude, _longitude);
             } else {
                 sprintf(link, "LAST LOCATION:\r\nhttps://www.openstreetmap.org/?mlat=%s&mlon=%s",_latitude, _longitude);
@@ -84,11 +84,12 @@ void GPSTracker::userStatus(){
     char power[TRACKER_PHONE_NUBER_SIZE];
     char fix[TRACKER_PHONE_NUBER_SIZE];
     char master[TRACKER_PHONE_NUBER_SIZE];
+    char link[TRACKER_PHONE_NUBER_SIZE];
 
     memset(master, 0, TRACKER_PHONE_NUBER_SIZE); 
     memset(power, 0, TRACKER_PHONE_NUBER_SIZE);
     memset(fix, 0, TRACKER_PHONE_NUBER_SIZE);
-
+    memset(link, 0, TRACKER_PHONE_NUBER_SIZE);
 
     updateGPSStatusInfo();
 
@@ -122,7 +123,13 @@ void GPSTracker::userStatus(){
         strcpy(master, "MASTER NUM: NOT SET");
     }
 
-    sprintf(text, "%s\r\n%s\r\n%s\r\n%s", power, fix, position, master);
+    if (_mapLinkSrc){
+        strcpy(link, "MAP LINK: OPENSTREETMAP");
+    } else {
+        strcpy(link, "MAP LINK: GOOGLE");
+    }
+
+    sprintf(text, "%s\r\n%s\r\n%s\r\n%s\r\n%s", power, fix, position, master, link);
 
     Serial.println("USER STATUS: Sending status info");
     if(!sendSMS(text, _phoneNumber)){

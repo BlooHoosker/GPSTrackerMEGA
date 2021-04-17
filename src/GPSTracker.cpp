@@ -10,6 +10,8 @@ void GPSTracker::printStatus(){
 	Serial.println(_fixStatus);
 	Serial.print("Master set: ");
 	Serial.println(_masterNumberSet);
+	Serial.print("Link source: ");
+	Serial.println(_mapLinkSrc);
 	Serial.print("Latitude: ");
 	Serial.println(_latitude);
 	Serial.print("Longitude: ");
@@ -117,6 +119,7 @@ bool GPSTracker::init(){
 
 	// Load master number from EEPROM
 	getMasterNumber();
+	getMapLinkSrc();
 
 	// Send "AT" and wait for "AT" response
 	// If "AT" response is received, reset is complete
