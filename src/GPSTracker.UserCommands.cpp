@@ -45,13 +45,22 @@ void GPSTracker::userLocation(){
 
     if (_fixStatus){
         if (strlen(_latitude) && strlen(_longitude)){
-            sprintf(link, "LOCATION:\r\nhttp://maps.google.com/maps?q=%s,%s",_latitude, _longitude);
+            if (getMapLinkSrc() == 0){
+                sprintf(link, "LOCATION:\r\nhttp://maps.google.com/maps?q=%s,%s",_latitude, _longitude);
+            } else {
+                sprintf(link, "LOCATION:\r\nhttps://www.openstreetmap.org/?mlat=%s&mlon=%s",_latitude, _longitude);
+            }
         } else {
             strcpy(link, "LOCATION: NO DATA");
         }
     } else {
         if (strlen(_latitude) && strlen(_longitude)){
-            sprintf(link, "LAST LOCATION:\r\nhttp://maps.google.com/maps?q=%s,%s",_latitude, _longitude);
+            if (getMapLinkSrc() == 0){
+                sprintf(link, "LAST LOCATION:\r\nhttp://maps.google.com/maps?q=%s,%s",_latitude, _longitude);
+            } else {
+                sprintf(link, "LAST LOCATION:\r\nhttps://www.openstreetmap.org/?mlat=%s&mlon=%s",_latitude, _longitude);
+            }
+            
         } else {
             strcpy(link, "LAST LOCATION: NO DATA");
         }
@@ -137,8 +146,19 @@ void GPSTracker::userResetMasterNumber(){
     sendSMS("MASTER NUMBER RESET", _phoneNumber);
 }
 
+void GPSTracker::userSetMapLinkSrc(const uint8_t linkSel){
 
+    if (linkSel != 0 && linkSel != 1) return;
 
+    setMapLinkSrc(linkSel);
+
+    Serial.println("USER LINK SET: Sending reply");
+    if (linkSel == 0){
+        sendSMS("GOOGLE MAP LINK SELECTED", _phoneNumber);
+    } else {
+        sendSMS("OPENSTREETMAP LINK SELECTED", _phoneNumber);
+    }
+}
 
 
 

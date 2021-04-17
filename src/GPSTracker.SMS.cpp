@@ -33,6 +33,10 @@ int GPSTracker::decodeSMSText(const char *SMSTEXT){
 
     if (!strcmp(SMSTEXT, "RESTART")) return 5;
 
+    if (!strcmp(SMSTEXT, "GOOGLE")) return 6;
+
+    if (!strcmp(SMSTEXT, "OPENSTREETMAP")) return 7;
+
     return -1;
 }
 
@@ -90,7 +94,16 @@ void GPSTracker::ATSMS(const char * ATCMTI){
             userResetMasterNumber();
             break;
         case 5: // RESTART
+            Serial.println("ATSMS: RESTART");
             restart();
+            break;
+        case 6:
+            Serial.println("ATSMS: GOOGLE");
+            userSetMapLinkSrc(0);
+            break;
+        case 7:
+            Serial.println("ATSMS: OPENSTREETMAP");
+            userSetMapLinkSrc(1);
             break;
         default: // Unknown command
             Serial.println("ATSMS: UNKNOWN");

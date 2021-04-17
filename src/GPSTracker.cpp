@@ -16,8 +16,14 @@ void GPSTracker::printStatus(){
 	Serial.println(_longitude);
 }
 
+void resetEEPROM(){
+	for (uint8_t i = 0; i < 50; i++){
+		EEPROM.update(i, 0);
+	}
+}
+
 void GPSTracker::test(){
-	resetMasterNumber();
+	resetEEPROM();
 	while(1);
 }
 
@@ -41,7 +47,6 @@ GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN){
 GPSTracker::~GPSTracker(){}
 
 void GPSTracker::restart(){
-	Serial.println("RESTART");
 	// Check if master number is set
 	if (!_masterNumberSet){
 		// If its not set, save phone number to memory to send reply after restart

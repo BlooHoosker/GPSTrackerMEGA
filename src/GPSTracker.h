@@ -9,9 +9,11 @@
 #define TRACKER_SECOND 1000
 
 #define RESTART_ADDR 0
-#define MASTERSET_ADDR 1
-#define CRC_ADDR 2
-#define LENGTH_ADDR 3 
+#define LINK_SRC_ADDR 1
+#define MASTERSET_ADDR 2
+#define CRC_ADDR 3
+#define LENGTH_ADDR 4 
+#define PHONE_NUM_ADDR 5 
 
 class GPSTracker
 {
@@ -345,6 +347,12 @@ private:
     * 0 = No fix
     */ 
     int8_t parseGPSFixStatus(const char * CGNSINF);
+
+    void setMapLinkSrc(const uint8_t linkSel);
+
+    uint8_t getMapLinkSrc();
+
+    void userSetMapLinkSrc(const uint8_t linkSel);
 
 
 };

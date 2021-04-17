@@ -19,7 +19,7 @@ bool GPSTracker::setMasterNumber(const char * phoneNumber){
 
     // Check if length of number is longer than storage space
     // Check if phoneNumber is empty
-    if (length+2U > EEPROM.length() || !length) return false;
+    if (length+5U > EEPROM.length() || !length) return false;
 
     // Calculate crc from length + phone number
     crc = calculateCRC(phoneNumber);
@@ -28,8 +28,8 @@ bool GPSTracker::setMasterNumber(const char * phoneNumber){
     // Write crc, length, phone number to EEPROM
     EEPROM.update(CRC_ADDR, crc);
     EEPROM.update(LENGTH_ADDR, length);
-    for (uint8_t i = 0; i < length; i++){
-        EEPROM.update(i+4, phoneNumber[i]);
+    for (uint8_t i = PHONE_NUM_ADDR; i < length; i++){
+        EEPROM.update(i, phoneNumber[i]);
     }
 
     // Phone number is already copied into _phoneNumber
@@ -62,8 +62,8 @@ void GPSTracker::getMasterNumber(){
     if (length >= TRACKER_PHONE_NUBER_SIZE) return;
 
     // Copy number from EEPROM
-    for (uint8_t i = 0; i < length; i++){
-        _phoneNumber[i] = EEPROM[i+4];
+    for (uint8_t i = PHONE_NUM_ADDR; i < length; i++){
+        _phoneNumber[i] = EEPROM[i];
     }
 
     // Calculate crc from length + phone number

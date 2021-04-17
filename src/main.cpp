@@ -11,6 +11,8 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Starts and cums uwu");
 
+  //tracker.test();
+
   // Serial.println("Testing..");
   // tracker.test();
 
