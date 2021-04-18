@@ -10,6 +10,8 @@ bool GPSTracker::powerGPS(bool on){
         // Checking if GPS is powered up
         delay(2*TRACKER_SECOND);
         if (getGPSPowerStatus() != 1) return false;
+        
+        _powerStatus = 1;
     } else {
         // Powering down GPS
         sendAT("+CGNSPWR=0");
@@ -18,6 +20,8 @@ bool GPSTracker::powerGPS(bool on){
         // Checking if GPS is powered down
         delay(2*TRACKER_SECOND);
         if (getGPSPowerStatus() != 0) return false; 
+
+        _powerStatus = 0;
     }
 
     return true;

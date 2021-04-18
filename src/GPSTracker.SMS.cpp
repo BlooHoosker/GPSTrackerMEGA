@@ -10,6 +10,24 @@ bool GPSTracker::setSMSMessageMode(bool text){
     return waitFor("OK");
 }
 
+bool GPSTracker::deleteAllSMS(){
+
+    sendAT("+CMGDA=\"DEL ALL\"");
+    if (!waitFor("OK", TRACKER_SECOND*25)){
+        return false;
+    }
+
+    return true;
+}
+
+bool GPSTracker::setSmsStorage(){
+    sendAT("+CPMS=\"ME\",\"ME\",\"ME\"");
+	if(!waitFor("OK")){
+		return false;
+	}
+    return true;
+}
+
 int8_t GPSTracker::parseSMSIndex(const char * ATCMTI){
     int index = 0;
     // Parse index from CMTI command
@@ -299,12 +317,3 @@ bool GPSTracker::parseSMSPhoneNumber(const char * ATCMGR, char * numberBuffer, s
     return true; 
 }
 
-bool GPSTracker::deleteAllSMS(){
-
-    sendAT("+CMGDA=\"DEL ALL\"");
-    if (!waitFor("OK", TRACKER_SECOND*25)){
-        return false;
-    }
-
-    return true;
-}

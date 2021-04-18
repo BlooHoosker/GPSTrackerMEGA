@@ -46,4 +46,27 @@ void GPSTracker::reset(){
 	digitalWrite(_resetPin, HIGH);
 }
 
+void GPSTracker::checkBatteryPercentage(){
 
+}
+
+bool GPSTracker::setGsmSleepMode(){
+	sendAT("+CSCLK=1");
+	if(!waitFor("OK")){
+		return false;
+	}
+    return true;
+	gsmSleep();
+}
+
+void GPSTracker::gsmSleep(){
+	// If GPS is off, GSM can go into sleep mode
+	if (!_powerStatus){
+		digitalWrite(_dtrPin, HIGH);
+	}
+}
+
+void GPSTracker::gsmWake(){
+	digitalWrite(_dtrPin, LOW);
+	delay(60);
+}

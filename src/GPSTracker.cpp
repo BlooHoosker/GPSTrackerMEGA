@@ -29,13 +29,16 @@ void GPSTracker::test(){
 	while(1);
 }
 
-GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN){
+GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN, uint8_t SIM_DTR_PIN){
     _resetPin = SIM_RESET_PIN;
     _powerPin = SIM_PWR_PIN;
+	_dtrPin = SIM_DTR_PIN;
     pinMode(_resetPin, OUTPUT);
     digitalWrite(_resetPin, HIGH);
     pinMode(_powerPin, OUTPUT);
     digitalWrite(_powerPin, LOW);
+	pinMode(_dtrPin, OUTPUT);
+    digitalWrite(_dtrPin, LOW);
 
 	memset(_phoneNumber, 0, TRACKER_PHONE_NUBER_SIZE);
 	memset(_latitude, 0, TRACKER_PHONE_NUBER_SIZE);
@@ -44,6 +47,7 @@ GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN){
 	_powerStatus = 0;
 	_fixStatus = 0;
 	_masterNumberSet = 0;
+	_mapLinkSrc = 0;
 }
 
 GPSTracker::~GPSTracker(){}
@@ -156,14 +160,18 @@ bool GPSTracker::init(){
 	}
 
 	// Set storage for SMS to module itself
-	sendAT("+CPMS=\"ME\",\"ME\",\"ME\"");
-	if(!waitFor("OK")){
+	if (!setSmsStorage()){
 		Serial.println("INIT: Failed to set storage");
 		return false;
 	}
 
 	if (!deleteAllSMS()){
 		Serial.println("INIT: Failed to receive OK delsms");
+		return false;
+	}
+
+	if (!setGsmSleepMode()){
+		Serial.println("INIT: Failed to receive OK sleep mode");
 		return false;
 	}
 

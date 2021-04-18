@@ -137,6 +137,7 @@ size_t GPSTracker::readAT(char * buffer, size_t size, uint16_t * timeout)
 	if (!end) {
 		return 0;
 	}
+	
 	buffer[i] = '\0';
 
 	return i;

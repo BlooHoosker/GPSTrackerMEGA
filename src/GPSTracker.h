@@ -24,7 +24,7 @@ public:
     void printStatus();
 
     // Provide reset and power pin
-    GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN);
+    GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN, uint8_t SIM_DTR_PIN);
     ~GPSTracker();
     
     /* 
@@ -45,11 +45,18 @@ public:
     
     void processAT(const char *ATCommand);
 
+    void checkBatteryPercentage();
+
+    void gsmSleep();
+
+    void gsmWake();
+
 private:
 
     Stream* _serialPort;
     uint8_t _resetPin;
     uint8_t _powerPin;
+    uint8_t _dtrPin;
 
     char _phoneNumber[TRACKER_PHONE_NUBER_SIZE];
     char _latitude[TRACKER_PHONE_NUBER_SIZE];
@@ -94,6 +101,25 @@ private:
     bool init();
 
     /*
+    * Sets SMS message mode
+    * text = true for Text mode
+    * text = false for PDU mode
+    * Returns true if operation was successful, false if not
+    */ 
+    bool setSMSMessageMode(bool text);
+
+    /*
+    * Sets echoing mode of sent AT commands
+    * echo = true to enable echo mode
+    * echo = false to disable echo mode
+    * Returns true if operation was successful
+    * Returns false on failure
+    */ 
+    bool setEchoMode(bool echo);
+
+    bool setSmsStorage();
+
+    /*
     * Waits until requested command is received
     * Discards any other previously received commands
     * Returns true if requested command is received
@@ -112,15 +138,6 @@ private:
     * Returns 0 if \r\n sequence is not reached or timeout runs out
     */
     size_t readAT(char *buffer, size_t size, uint16_t *timeout);
-
-    /*
-    * Sets echoing mode of sent AT commands
-    * echo = true to enable echo mode
-    * echo = false to disable echo mode
-    * Returns true if operation was successful
-    * Returns false on failure
-    */ 
-    bool setEchoMode(bool echo);
 
     /*
     * Sends formatted AT command with "AT" and "\r\n"
@@ -144,14 +161,6 @@ private:
     * Returns false if they don't
     */ 
     bool compareAT(const char * receivedAT, const char * expectedAT);
-
-    /*
-    * Sets SMS message mode
-    * text = true for Text mode
-    * text = false for PDU mode
-    * Returns true if operation was successful, false if not
-    */ 
-    bool setSMSMessageMode(bool text);
 
     /*
     * Parses SMS index of location in module's storage
@@ -306,8 +315,6 @@ private:
     */ 
     bool getGPSPosition(char * latitude, char * longitude, size_t size);
 
-    int8_t getGPSAccuracy();
-
     /*
     * Gets GPS fix status
     * Returns:
@@ -354,6 +361,8 @@ private:
     void getMapLinkSrc();
 
     void userSetMapLinkSrc(const uint8_t linkSel);
+
+    bool setGsmSleepMode();
 
 
 };
