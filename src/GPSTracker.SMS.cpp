@@ -60,8 +60,8 @@ int GPSTracker::decodeSMSText(const char *SMSTEXT){
 
 void GPSTracker::ATSMS(const char * ATCMTI){
 
-    char text[TRACKER_BUFFER_SIZE];
-    char phoneNumber[TRACKER_PHONE_NUBER_SIZE];
+    char text[TRACKER_BUFFER_LARGE];
+    char phoneNumber[TRACKER_BUFFER_SHORT];
 
     // Get SMS index in storage
     int8_t index = parseSMSIndex(ATCMTI);
@@ -71,7 +71,7 @@ void GPSTracker::ATSMS(const char * ATCMTI){
     }
 
     // Read SMS from module storage at index
-    if (!readSMS(index, text, phoneNumber, TRACKER_BUFFER_SIZE, TRACKER_PHONE_NUBER_SIZE)){
+    if (!readSMS(index, text, phoneNumber, TRACKER_BUFFER_LARGE, TRACKER_BUFFER_SHORT)){
         Serial.println("ATSMS: Failed to read SMS");
         return;
     }
@@ -144,7 +144,7 @@ void GPSTracker::extractSMSText(char * SMSText){
 
 bool GPSTracker::sendSMS(const char * text, const char * phoneNumber){
 
-    char buffer[TRACKER_BUFFER_SIZE];
+    char buffer[TRACKER_BUFFER_LARGE];
 
     // Checking length, max SMS length is 160
     if (strlen(text) > 160){
@@ -153,7 +153,7 @@ bool GPSTracker::sendSMS(const char * text, const char * phoneNumber){
     }
 
     // Creating AT command sequence
-    memset(buffer, 0, TRACKER_BUFFER_SIZE);
+    memset(buffer, 0, TRACKER_BUFFER_LARGE);
     if (sprintf(buffer, "+CMGS=\"%s\"", phoneNumber) <= 0){
         Serial.println("SEND SMS: Failed to create CMGS sequence");
         return false;
@@ -226,11 +226,10 @@ bool GPSTracker::waitForPromt(uint16_t timeout){
 
 bool GPSTracker::readSMS(uint8_t smsIndex, char * text, char * phoneNumber, size_t textSize, size_t phoneNumSize){
 
-    memset(text, 0, TRACKER_BUFFER_SIZE);
-    memset(phoneNumber, 0, TRACKER_PHONE_NUBER_SIZE);
+    memset(text, 0, TRACKER_BUFFER_LARGE);
+    memset(phoneNumber, 0, TRACKER_BUFFER_SHORT);
 
     if (sprintf(text, "+CMGR=%d", smsIndex) <= 0){
-        // TODO what to do in this case
         return false;
     }
 
@@ -238,29 +237,25 @@ bool GPSTracker::readSMS(uint8_t smsIndex, char * text, char * phoneNumber, size
     sendAT(text);
 
     // Wait for CMGR reply
-    if (!waitFor(text, TRACKER_BUFFER_SIZE, 5*TRACKER_SECOND, "+CMGR")){
+    if (!waitFor(text, TRACKER_BUFFER_LARGE, 5*TRACKER_SECOND, "+CMGR")){
         Serial.println("READ SMS: Failed to receive SMS AT sequence");
-        // TODO what to do in this case
         return false;
     }
 
     // Parsing phone number from CMGR
-    if (!parseSMSPhoneNumber(text, phoneNumber, TRACKER_PHONE_NUBER_SIZE)){
+    if (!parseSMSPhoneNumber(text, phoneNumber, TRACKER_BUFFER_SHORT)){
         Serial.println("READ SMS: Failed to parse phone number");
-        // TODO what to do in this case
         return false;
     }
       
     // Waiting for actual SMS text
-    if (!receiveAT(text, TRACKER_BUFFER_SIZE, TRACKER_DEFAULT_TIMEOUT)){
+    if (!receiveAT(text, TRACKER_BUFFER_LARGE, TRACKER_DEFAULT_TIMEOUT)){
         Serial.println("READ SMS: Failed to receive sms text");
-        // TODO what to do in this case
         return false;
     }
 
     if (!waitFor("OK")){
         Serial.println("READ SMS: Failed to receive OK");
-        // TODO what to do in this case
         return false;
     }
 

@@ -2,12 +2,12 @@
 
 bool GPSTracker::waitFor(const char *command, uint16_t timeout /*= TRACKER_DEFAULT_TIMEOUT*/){
 
-	char buffer[TRACKER_BUFFER_SIZE];
+	char buffer[TRACKER_BUFFER_LARGE];
 	uint8_t length = 0;
 
 	do {
-		memset(buffer, 0, TRACKER_BUFFER_SIZE);
-		length = readAT(buffer, TRACKER_BUFFER_SIZE, &timeout);
+		memset(buffer, 0, TRACKER_BUFFER_LARGE);
+		length = readAT(buffer, TRACKER_BUFFER_LARGE, &timeout);
 		if (length > 0){
 
 			/*

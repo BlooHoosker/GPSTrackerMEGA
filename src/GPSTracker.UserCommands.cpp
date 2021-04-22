@@ -37,9 +37,9 @@ void GPSTracker::userGPSPower(const char * SMSGPSPower){
 
 void GPSTracker::userLocation(){
 
-    char link[TRACKER_BUFFER_SIZE];
+    char link[TRACKER_BUFFER_LARGE];
 
-    memset(link, 0, TRACKER_BUFFER_SIZE);
+    memset(link, 0, TRACKER_BUFFER_LARGE);
 
     if (!updateGPSStatusInfo()){
         sendSMS("ERROR GETTING GPS INFO", _phoneNumber);
@@ -78,21 +78,22 @@ void GPSTracker::userLocation(){
 
 void GPSTracker::userStatus(){
 
-    char text[TRACKER_BUFFER_SIZE];
-    char position[TRACKER_BUFFER_SIZE];
+    char text[TRACKER_BUFFER_LARGE];
+    char position[TRACKER_BUFFER_MEDIUM];
 
-    memset(position, 0, TRACKER_BUFFER_SIZE);
-    memset(text, 0, TRACKER_BUFFER_SIZE);
+    memset(text, 0, TRACKER_BUFFER_LARGE);
+    memset(position, 0, TRACKER_BUFFER_MEDIUM);
+
     
-    char power[TRACKER_PHONE_NUBER_SIZE];
-    char fix[TRACKER_PHONE_NUBER_SIZE];
-    char master[TRACKER_PHONE_NUBER_SIZE];
-    char link[TRACKER_PHONE_NUBER_SIZE];
+    char power[TRACKER_BUFFER_SHORT];
+    char fix[TRACKER_BUFFER_SHORT];
+    char master[TRACKER_BUFFER_SHORT];
+    char link[TRACKER_BUFFER_SHORT];
 
-    memset(master, 0, TRACKER_PHONE_NUBER_SIZE); 
-    memset(power, 0, TRACKER_PHONE_NUBER_SIZE);
-    memset(fix, 0, TRACKER_PHONE_NUBER_SIZE);
-    memset(link, 0, TRACKER_PHONE_NUBER_SIZE);
+    memset(master, 0, TRACKER_BUFFER_SHORT); 
+    memset(power, 0, TRACKER_BUFFER_SHORT);
+    memset(fix, 0, TRACKER_BUFFER_SHORT);
+    memset(link, 0, TRACKER_BUFFER_SHORT);
 
     if (!updateGPSStatusInfo()){
         sendSMS("ERROR GETTING GPS INFO", _phoneNumber);

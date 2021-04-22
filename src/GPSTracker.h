@@ -3,8 +3,10 @@
 #include <Arduino.h>
 #include <Stream.h>
 
-#define TRACKER_BUFFER_SIZE 256
-#define TRACKER_PHONE_NUBER_SIZE 32
+#define TRACKER_BUFFER_LARGE 200
+#define TRACKER_BUFFER_MEDIUM 64
+#define TRACKER_BUFFER_SHORT 32
+
 #define TRACKER_DEFAULT_TIMEOUT 2000
 #define TRACKER_SECOND 1000
 
@@ -64,16 +66,16 @@ private:
     uint8_t _buttonPin;
     uint8_t _batteryPin;
 
-    char _phoneNumber[TRACKER_PHONE_NUBER_SIZE];
-    char _latitude[TRACKER_PHONE_NUBER_SIZE];
-    char _longitude[TRACKER_PHONE_NUBER_SIZE];
+    char _phoneNumber[TRACKER_BUFFER_SHORT];
+    char _latitude[TRACKER_BUFFER_SHORT];
+    char _longitude[TRACKER_BUFFER_SHORT];
 
     uint8_t _powerStatus;
     uint8_t _fixStatus;
     uint8_t _masterNumberSet;
     uint8_t _mapLinkSrc;
 
-    float _batteryPercentage;
+    uint8_t _batteryPercentage;
     bool _batteryWarningSent;
 
     void resetEEPROM();

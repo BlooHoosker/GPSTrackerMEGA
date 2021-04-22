@@ -51,7 +51,7 @@ void GPSTracker::getMasterNumber(){
     // Checking master number flag in EEPROM
     if (EEPROM[MASTERSET_ADDR] != 0xFF) return;
 
-    memset(_phoneNumber, 0, TRACKER_PHONE_NUBER_SIZE);
+    memset(_phoneNumber, 0, TRACKER_BUFFER_SHORT);
 
     _masterNumberSet = 0;
 
@@ -59,7 +59,7 @@ void GPSTracker::getMasterNumber(){
     length = (uint8_t) EEPROM[LENGTH_ADDR];
     
     // Check if length of number is longer than buffer
-    if (length >= TRACKER_PHONE_NUBER_SIZE) return;
+    if (length >= TRACKER_BUFFER_SHORT) return;
 
     // Copy number from EEPROM
     for (uint8_t i = 0; i < length; i++){
@@ -73,7 +73,7 @@ void GPSTracker::getMasterNumber(){
     // Check if crc matches
     if(crc != EEPROM[CRC_ADDR]){
         Serial.println("CRC don't match");
-        memset(_phoneNumber, 0, TRACKER_PHONE_NUBER_SIZE);
+        memset(_phoneNumber, 0, TRACKER_BUFFER_SHORT);
     } else {
         Serial.print("Master loaded: ");
         Serial.println(_phoneNumber);

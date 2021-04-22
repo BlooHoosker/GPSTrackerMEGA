@@ -19,6 +19,14 @@ void lowPowerConfig(){
   power_usart3_disable();
 }
 
+void builtInLedOn(){
+    digitalWrite(LED_BUILTIN, HIGH);
+}
+
+void builtInLedOff(){
+    digitalWrite(LED_BUILTIN, LOW);
+}
+
 void fastBlink(){
   uint8_t state = 0;
   pinMode(LED_BUILTIN, OUTPUT);
@@ -31,7 +39,9 @@ void fastBlink(){
 
 void setup() {
   Serial.begin(9600);
+  // Pinmode for built in LED
   pinMode(LED_BUILTIN, OUTPUT);
+  builtInLedOn();
 
   Serial.println("SETUP: Arduino config");
 
@@ -54,16 +64,18 @@ void setup() {
     fastBlink(); // Fast blinking of built in LED
   }
 
-  Serial.println("SETUP: Start successful");
-
   // Disabling built in LED
-  digitalWrite(LED_BUILTIN, LOW);
+  builtInLedOff();
+
+  Serial.println("SETUP: Start successful");
+  Serial.println("=====================================================");
+  Serial.println();
 
   // Serial.println("Testing...");
   // tracker.test();
 }
 
-char trackerReceiveBuffer[TRACKER_BUFFER_SIZE];
+char trackerReceiveBuffer[TRACKER_BUFFER_SHORT];
 void loop() {
 
   Serial.println("Receiving...");
@@ -72,9 +84,11 @@ void loop() {
   LowPower.idle(SLEEP_8S, ADC_OFF, TIMER5_OFF, TIMER4_OFF, TIMER3_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_OFF, SPI_ON, USART3_ON, USART2_ON, USART1_ON, USART0_OFF, TWI_ON);
 
   // Checking if UART has received any data
-  if (tracker.receiveAT(trackerReceiveBuffer, TRACKER_BUFFER_SIZE, 100)){
+  if (tracker.receiveAT(trackerReceiveBuffer, TRACKER_BUFFER_SHORT, 100)){
     Serial.print(trackerReceiveBuffer);
+    builtInLedOn();
     tracker.processAT(trackerReceiveBuffer);  
+    builtInLedOff();
   }
 
   // Checking reset button status
@@ -84,12 +98,12 @@ void loop() {
   tracker.checkBatteryPercentage();
 
   // Checking GSM status
-  Serial.println("Checking gsm status");
   tracker.checkGSM();
-  Serial.println("Check complete");
 
   tracker.printStatus(); 
+  Serial.println("=====================================================");
   Serial.println();
+
   delay(100);
 }
 

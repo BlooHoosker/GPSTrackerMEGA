@@ -27,13 +27,13 @@ bool GPSTracker::powerOn(){
 }
 
 bool GPSTracker::powered(){
-	char buffer[TRACKER_BUFFER_SIZE];
+	char buffer[TRACKER_BUFFER_SHORT];
 	
 	// Send AT and waiting for response
 	sendAT();
 
 	// Wait for any AT response
-	if (!receiveAT(buffer, TRACKER_BUFFER_SIZE, TRACKER_DEFAULT_TIMEOUT)) return false;
+	if (!receiveAT(buffer, TRACKER_BUFFER_SHORT, TRACKER_DEFAULT_TIMEOUT)) return false;
 
 	return true;
 }
@@ -80,6 +80,12 @@ void GPSTracker::checkBatteryPercentage(){
 
 	// todo map to 4.2-3.4
 	_batteryPercentage = (voltage - BATTERY_VMIN) * 100 / (BATTERY_VMAX - BATTERY_VMIN);
+
+	if (_batteryPercentage > 100) {
+		_batteryPercentage = 100;
+	} else if (_batteryPercentage < 0){
+		_batteryPercentage = 0;
+	}
 
 	if (_batteryPercentage < 20){
 		if (!_batteryWarningSent){

@@ -47,18 +47,18 @@ bool  GPSTracker::getGPSInfo(char * buffer, size_t bufferSize){
 
 int8_t GPSTracker::getGPSPowerStatus(){
 
-    char buffer[TRACKER_BUFFER_SIZE];
+    char buffer[TRACKER_BUFFER_LARGE];
 
-    if (!getGPSInfo(buffer, TRACKER_BUFFER_SIZE)) return -1;
+    if (!getGPSInfo(buffer, TRACKER_BUFFER_LARGE)) return -1;
 
     return parseGPSPowerStatus(buffer);
 }
 
 bool GPSTracker::getGPSPosition(char * latitude, char * longitude, size_t bufferSize){
 
-    char buffer[TRACKER_BUFFER_SIZE];
+    char buffer[TRACKER_BUFFER_LARGE];
 
-    if (!getGPSInfo(buffer, TRACKER_BUFFER_SIZE)) return false;
+    if (!getGPSInfo(buffer, TRACKER_BUFFER_LARGE)) return false;
 
     Serial.print(buffer);
 
@@ -82,9 +82,9 @@ bool GPSTracker::getGPSPosition(char * latitude, char * longitude, size_t buffer
 
 int8_t GPSTracker::getGPSFixStatus(){
 
-    char buffer[TRACKER_BUFFER_SIZE];
+    char buffer[TRACKER_BUFFER_LARGE];
 
-    if (!getGPSInfo(buffer, TRACKER_BUFFER_SIZE)) return -1;
+    if (!getGPSInfo(buffer, TRACKER_BUFFER_LARGE)) return -1;
 
     // Checking GPS power status
     // TODO check if this is good idea to return 0
@@ -215,9 +215,9 @@ int8_t GPSTracker::parseGPSPowerStatus(const char * CGNSINF){
 
 bool GPSTracker::updateGPSStatusInfo(){
 
-    char latitude[TRACKER_PHONE_NUBER_SIZE];
-    char longitude[TRACKER_PHONE_NUBER_SIZE];
-    char buffer[TRACKER_BUFFER_SIZE];
+    char latitude[TRACKER_BUFFER_SHORT];
+    char longitude[TRACKER_BUFFER_SHORT];
+    char buffer[TRACKER_BUFFER_LARGE];
 
     int8_t powerStatus = 0;
     int8_t fixStatus = 0;
@@ -225,7 +225,7 @@ bool GPSTracker::updateGPSStatusInfo(){
     _powerStatus = 0;   
     _fixStatus = 0;
 
-    if (!getGPSInfo(buffer, TRACKER_BUFFER_SIZE)){
+    if (!getGPSInfo(buffer, TRACKER_BUFFER_LARGE)){
         Serial.println("UPDATE: Failed to get info");
         return false;
     }
@@ -250,7 +250,7 @@ bool GPSTracker::updateGPSStatusInfo(){
     _fixStatus = fixStatus;
     if (!fixStatus) return true;
 
-    if (!parseGPSPosition(buffer, latitude, longitude, TRACKER_PHONE_NUBER_SIZE)){
+    if (!parseGPSPosition(buffer, latitude, longitude, TRACKER_BUFFER_LARGE)){
         Serial.println("UPDATE: Failed to parse position");
         return false;
     }

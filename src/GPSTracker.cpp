@@ -4,6 +4,10 @@
 
 void GPSTracker::printStatus(){
 	updateGPSStatusInfo();
+	Serial.print("Latitude: ");
+	Serial.println(_latitude);
+	Serial.print("Longitude: ");
+	Serial.println(_longitude);
 	Serial.print("Power status: ");
 	Serial.println(_powerStatus);
 	Serial.print("Fix status: ");
@@ -12,21 +16,19 @@ void GPSTracker::printStatus(){
 	Serial.println(_masterNumberSet);
 	Serial.print("Link source: ");
 	Serial.println(_mapLinkSrc);
-	Serial.print("Latitude: ");
-	Serial.println(_latitude);
-	Serial.print("Longitude: ");
-	Serial.println(_longitude);
+	Serial.print("Battery: ");
+	Serial.println(_batteryPercentage);
 }
 
 void GPSTracker::resetEEPROM(){
-	for (uint8_t i = 0; i < 6+TRACKER_PHONE_NUBER_SIZE; i++){
+	for (uint8_t i = 0; i < 6+TRACKER_BUFFER_SHORT; i++){
 		EEPROM.update(i, 0);
 	}
 }
 
 void GPSTracker::test(){
-	char trackerReceiveBuffer[TRACKER_BUFFER_SIZE];
-	memset(trackerReceiveBuffer, 0, TRACKER_BUFFER_SIZE);
+	char trackerReceiveBuffer[TRACKER_BUFFER_SHORT];
+	memset(trackerReceiveBuffer, 0, TRACKER_BUFFER_SHORT);
 	delay(1000);
 	Serial.println("Sleep");
 	gsmSleep();
@@ -35,7 +37,7 @@ void GPSTracker::test(){
 	//Serial.println("Wake");
 	Serial.println("recieving");
 	while(1){
-		if (receiveAT(trackerReceiveBuffer, TRACKER_BUFFER_SIZE, 5*TRACKER_SECOND)){
+		if (receiveAT(trackerReceiveBuffer, TRACKER_BUFFER_SHORT, 5*TRACKER_SECOND)){
     		Serial.print(trackerReceiveBuffer);
 		}
 	}
@@ -61,9 +63,9 @@ GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN, uint8_t SIM_D
 	_batteryPin = BATTERY_PIN;
 	//pinmode?
 
-	memset(_phoneNumber, 0, TRACKER_PHONE_NUBER_SIZE);
-	memset(_latitude, 0, TRACKER_PHONE_NUBER_SIZE);
-	memset(_longitude, 0, TRACKER_PHONE_NUBER_SIZE);
+	memset(_phoneNumber, 0, TRACKER_BUFFER_SHORT);
+	memset(_latitude, 0, TRACKER_BUFFER_SHORT);
+	memset(_longitude, 0, TRACKER_BUFFER_SHORT);
 
 	_powerStatus = 0;
 	_fixStatus = 0;
@@ -203,7 +205,6 @@ bool GPSTracker::init(){
 
 void GPSTracker::checkButton(){
 
-	Serial.println("Button check");
 	uint8_t sample_1 = digitalRead(_buttonPin);
 	delay(10);
 	uint8_t sample_2 = digitalRead(_buttonPin);
@@ -215,7 +216,7 @@ void GPSTracker::checkButton(){
 		return;
 	}
 
-	Serial.println("Button is pressed");
+	Serial.println("BUTTON: Pressed");
 	delay(3000);
 
 	sample_1 = digitalRead(_buttonPin);

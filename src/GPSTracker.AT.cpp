@@ -1,8 +1,8 @@
 #include <GPSTracker.h>
 
 void GPSTracker::sendAT(const char * AT /* = "" */){
-    char buffer[TRACKER_BUFFER_SIZE];
-    memset(buffer, 0, TRACKER_BUFFER_SIZE);
+    char buffer[TRACKER_BUFFER_MEDIUM];
+    memset(buffer, 0, TRACKER_BUFFER_MEDIUM);
 
     sprintf(buffer, "AT%s\r\n", AT);
     _serialPort->write(buffer);
