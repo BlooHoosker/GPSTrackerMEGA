@@ -24,7 +24,7 @@ public:
     void printStatus();
 
     // Provide reset and power pin
-    GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN, uint8_t SIM_DTR_PIN);
+    GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN, uint8_t SIM_DTR_PIN, uint8_t RST_BTN_PIN, uint8_t BATTERY_PIN);
     ~GPSTracker();
     
     /* 
@@ -51,12 +51,18 @@ public:
 
     void gsmWake();
 
+    void checkButton();
+
+    void checkGSM();
+
 private:
 
     Stream* _serialPort;
     uint8_t _resetPin;
     uint8_t _powerPin;
     uint8_t _dtrPin;
+    uint8_t _buttonPin;
+    uint8_t _batteryPin;
 
     char _phoneNumber[TRACKER_PHONE_NUBER_SIZE];
     char _latitude[TRACKER_PHONE_NUBER_SIZE];
@@ -66,6 +72,11 @@ private:
     uint8_t _fixStatus;
     uint8_t _masterNumberSet;
     uint8_t _mapLinkSrc;
+
+    float _batteryPercentage;
+    bool _batteryWarningSent;
+
+    void resetEEPROM();
 
     /* 
     * User induced restart
@@ -280,7 +291,7 @@ private:
     /*
     * Gets current data from GPS and updates internal variables
     */ 
-    void updateGPSStatusInfo();
+    bool updateGPSStatusInfo();
 
     /*
     * Powers up/down GPS

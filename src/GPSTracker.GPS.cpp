@@ -213,7 +213,7 @@ int8_t GPSTracker::parseGPSPowerStatus(const char * CGNSINF){
     } 
 }
 
-void GPSTracker::updateGPSStatusInfo(){
+bool GPSTracker::updateGPSStatusInfo(){
 
     char latitude[TRACKER_PHONE_NUBER_SIZE];
     char longitude[TRACKER_PHONE_NUBER_SIZE];
@@ -227,35 +227,37 @@ void GPSTracker::updateGPSStatusInfo(){
 
     if (!getGPSInfo(buffer, TRACKER_BUFFER_SIZE)){
         Serial.println("UPDATE: Failed to get info");
-        return;
+        return false;
     }
 
     powerStatus = parseGPSPowerStatus(buffer);
     if (powerStatus == -1) {
         Serial.println("UPDATE: Failed to parse power status");
-        return;        
+        return false;        
     } 
 
     _powerStatus = powerStatus;
     if (!powerStatus){
-        return;
+        return true;
     }
 
     fixStatus = parseGPSFixStatus(buffer);
     if (fixStatus == -1){
         Serial.println("UPDATE: Failed to parse fix status");
-        return;           
+        return false;           
     }
 
     _fixStatus = fixStatus;
-    if (!fixStatus) return;
+    if (!fixStatus) return true;
 
     if (!parseGPSPosition(buffer, latitude, longitude, TRACKER_PHONE_NUBER_SIZE)){
         Serial.println("UPDATE: Failed to parse position");
-        return;
+        return false;
     }
 
     strcpy(_latitude, latitude);
     strcpy(_longitude, longitude);
+
+    return true;
 }
 

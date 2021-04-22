@@ -10,6 +10,14 @@ bool GPSTracker::setSMSMessageMode(bool text){
     return waitFor("OK");
 }
 
+bool GPSTracker::setSmsStorage(){
+    sendAT("+CPMS=\"ME\",\"ME\",\"ME\"");
+	if(!waitFor("OK")){
+		return false;
+	}
+    return true;
+}
+
 bool GPSTracker::deleteAllSMS(){
 
     sendAT("+CMGDA=\"DEL ALL\"");
@@ -17,14 +25,6 @@ bool GPSTracker::deleteAllSMS(){
         return false;
     }
 
-    return true;
-}
-
-bool GPSTracker::setSmsStorage(){
-    sendAT("+CPMS=\"ME\",\"ME\",\"ME\"");
-	if(!waitFor("OK")){
-		return false;
-	}
     return true;
 }
 
@@ -124,6 +124,7 @@ void GPSTracker::ATSMS(const char * ATCMTI){
             userSetMapLinkSrc(1);
             break;
         default: // Unknown command
+            sendSMS("INVALID COMMAND", _phoneNumber);
             Serial.println("ATSMS: UNKNOWN");
             break;
     }

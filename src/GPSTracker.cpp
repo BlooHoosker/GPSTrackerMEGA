@@ -18,27 +18,48 @@ void GPSTracker::printStatus(){
 	Serial.println(_longitude);
 }
 
-void resetEEPROM(){
-	for (uint8_t i = 0; i < 50; i++){
+void GPSTracker::resetEEPROM(){
+	for (uint8_t i = 0; i < 6+TRACKER_PHONE_NUBER_SIZE; i++){
 		EEPROM.update(i, 0);
 	}
 }
 
 void GPSTracker::test(){
-	resetEEPROM();
-	while(1);
+	char trackerReceiveBuffer[TRACKER_BUFFER_SIZE];
+	memset(trackerReceiveBuffer, 0, TRACKER_BUFFER_SIZE);
+	delay(1000);
+	Serial.println("Sleep");
+	gsmSleep();
+	delay(5000);
+	//gsmWake();
+	//Serial.println("Wake");
+	Serial.println("recieving");
+	while(1){
+		if (receiveAT(trackerReceiveBuffer, TRACKER_BUFFER_SIZE, 5*TRACKER_SECOND)){
+    		Serial.print(trackerReceiveBuffer);
+		}
+	}
 }
 
-GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN, uint8_t SIM_DTR_PIN){
+GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN, uint8_t SIM_DTR_PIN, uint8_t RST_BTN_PIN, uint8_t BATTERY_PIN){
+
     _resetPin = SIM_RESET_PIN;
-    _powerPin = SIM_PWR_PIN;
-	_dtrPin = SIM_DTR_PIN;
-    pinMode(_resetPin, OUTPUT);
+	pinMode(_resetPin, OUTPUT);
     digitalWrite(_resetPin, HIGH);
+
+    _powerPin = SIM_PWR_PIN;
     pinMode(_powerPin, OUTPUT);
     digitalWrite(_powerPin, LOW);
+
+	_dtrPin = SIM_DTR_PIN;
 	pinMode(_dtrPin, OUTPUT);
     digitalWrite(_dtrPin, LOW);
+
+	_buttonPin = RST_BTN_PIN;
+	pinMode(_dtrPin, INPUT_PULLUP);
+
+	_batteryPin = BATTERY_PIN;
+	//pinmode?
 
 	memset(_phoneNumber, 0, TRACKER_PHONE_NUBER_SIZE);
 	memset(_latitude, 0, TRACKER_PHONE_NUBER_SIZE);
@@ -48,6 +69,7 @@ GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN, uint8_t SIM_D
 	_fixStatus = 0;
 	_masterNumberSet = 0;
 	_mapLinkSrc = 0;
+	_batteryPercentage = 0;
 }
 
 GPSTracker::~GPSTracker(){}
@@ -113,7 +135,7 @@ bool GPSTracker::start(Stream &serial){
 // Disable ECHO
 // Set SMS text mode
 // Set SMS storage mode to module itself 
-// Delete all stored SMS 
+// Delete all stored SMS in module
 bool GPSTracker::init(){
 
 	bool received = false;
@@ -165,18 +187,63 @@ bool GPSTracker::init(){
 		return false;
 	}
 
+	// Deleting all messages from module to create space
 	if (!deleteAllSMS()){
 		Serial.println("INIT: Failed to receive OK delsms");
 		return false;
 	}
 
-	if (!setGsmSleepMode()){
-		Serial.println("INIT: Failed to receive OK sleep mode");
-		return false;
-	}
+	// if (!setGsmSleepMode()){
+	// 	Serial.println("INIT: Failed to receive OK sleep mode");
+	// 	return false;
+	// }
 
 	return true;
 }
 
+void GPSTracker::checkButton(){
+
+	Serial.println("Button check");
+	uint8_t sample_1 = digitalRead(_buttonPin);
+	delay(10);
+	uint8_t sample_2 = digitalRead(_buttonPin);
+	delay(10);
+	uint8_t sample_3 = digitalRead(_buttonPin);
+	delay(10);
+
+	if (sample_1 != 0 || sample_1 != sample_2 || sample_2 != sample_3){
+		return;
+	}
+
+	Serial.println("Button is pressed");
+	delay(3000);
+
+	sample_1 = digitalRead(_buttonPin);
+	delay(10);
+	sample_2 = digitalRead(_buttonPin);
+	delay(10);
+	sample_3 = digitalRead(_buttonPin);
+	delay(10);
 
 
+	if (sample_1 == 0 && sample_1 == sample_2 && sample_2 == sample_3){
+		resetEEPROM();
+		wdt_enable(WDTO_120MS);
+		while (1);
+	}
+}
+
+void GPSTracker::checkGSM(){
+
+	sendAT();
+
+	if(waitFor("OK")){
+		return;
+	}
+
+	init();
+
+	if (_powerStatus){
+		powerGPS(true);
+	}
+}

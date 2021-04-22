@@ -6,20 +6,20 @@ void GPSTracker::userGPSPower(const char * SMSGPSPower){
 
     if(sscanf(SMSGPSPower, "GPS POWER: %u", &status) != 1){
         Serial.println("USER POWER: Invalid command format");
-        //sendSMS("INVALID COMMAND FORMAT\nCOMMAND SHOULD BE: \"GPS 0/1\"", phoneNum);
+        sendSMS("INVALID COMMAND FORMAT\nCOMMAND SHOULD BE: \"GPS 0/1\"", _phoneNumber);
         return;
     }
 
     if (status != 0 && status != 1){
         Serial.println("USER POWER: Invalid command format2");
-        //sendSMS("INVALID COMMAND FORMAT\nCOMMAND SHOULD BE: \"GPS 0/1\"", phoneNum);
+        sendSMS("INVALID COMMAND FORMAT\nCOMMAND SHOULD BE: \"GPS [0,1]\"", _phoneNumber);
         return;
     }
 
     // TODO check if this works
     if( !powerGPS(status) ) {
         Serial.println("USER POWER: GPS failed to power up");
-        //sendSMS("FAILED SET GPS POWER", phoneNum);
+        sendSMS("FAILED SET GPS POWER", _phoneNumber);
         return;
     };
 
@@ -41,7 +41,10 @@ void GPSTracker::userLocation(){
 
     memset(link, 0, TRACKER_BUFFER_SIZE);
 
-    updateGPSStatusInfo();
+    if (!updateGPSStatusInfo()){
+        sendSMS("ERROR GETTING GPS INFO", _phoneNumber);
+        return;
+    }
 
     if (_fixStatus){
         if (strlen(_latitude) && strlen(_longitude)){
@@ -91,7 +94,10 @@ void GPSTracker::userStatus(){
     memset(fix, 0, TRACKER_PHONE_NUBER_SIZE);
     memset(link, 0, TRACKER_PHONE_NUBER_SIZE);
 
-    updateGPSStatusInfo();
+    if (!updateGPSStatusInfo()){
+        sendSMS("ERROR GETTING GPS INFO", _phoneNumber);
+        return;
+    }
 
     if (_powerStatus){
         strcpy(power, "GPS POWER: ON");
@@ -143,7 +149,7 @@ void GPSTracker::userSetMasterNumber(const char * phoneNumber){
         sendSMS("MASTER NUMBER SET", _phoneNumber);
     } else {
         Serial.println("USER MASTER SET: Failed");
-        //sendSMS("FAILED TO SET MASTER NUMBER", _phoneNumber);
+        sendSMS("FAILED TO SET MASTER NUMBER", _phoneNumber);
     }
 }
 
