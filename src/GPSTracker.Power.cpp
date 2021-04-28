@@ -17,6 +17,7 @@ bool GPSTracker::powerOn(){
 	// Send "AT" and wait for "AT" response
 	// If "AT" response is received, the module is powered on
 	// 4 attempts in total
+	
 	for (uint8_t i = 4; i > 0; i--){
 		sendAT();
 		if ( powered() ) return true;
@@ -45,26 +46,6 @@ void GPSTracker::reset(){
 	digitalWrite(_resetPin, LOW);
 	delay(200);
 	digitalWrite(_resetPin, HIGH);
-}
-
-bool GPSTracker::setGsmSleepMode(){
-	sendAT("+CSCLK=1");
-	if(!waitFor("OK")){
-		return false;
-	}
-    return true;
-}
-
-void GPSTracker::gsmSleep(){
-	// If GPS is off, GSM can go into sleep mode
-	if (!_powerStatus){
-		digitalWrite(_dtrPin, HIGH);
-	}
-}
-
-void GPSTracker::gsmWake(){
-	digitalWrite(_dtrPin, LOW);
-	delay(60);
 }
 
 void GPSTracker::checkBatteryPercentage(){
@@ -96,3 +77,34 @@ void GPSTracker::checkBatteryPercentage(){
 		_batteryWarningSent = false;
 	}
 }
+
+// bool GPSTracker::enableGsmSleepMode(){
+// 	sendAT("+CSCLK=1");
+// 	if(!waitFor("OK")){
+// 		return false;
+// 	}
+// 	gsmSleep();
+//     return true;
+// }
+
+// bool GPSTracker::disableGsmSleepMode(){
+// 	gsmWake();
+// 	sendAT("+CSCLK=0");
+// 	if(!waitFor("OK")){
+// 		return false;
+// 	}
+//     return true;
+// }
+
+// void GPSTracker::gsmSleep(){
+// 	// If GPS is off, GSM can go into sleep mode
+// 	if (!_powerStatus){
+// 		digitalWrite(_dtrPin, HIGH);
+// 	}
+// }
+
+// void GPSTracker::gsmWake(){
+// 	digitalWrite(_dtrPin, LOW);
+// 	delay(100);
+// }
+

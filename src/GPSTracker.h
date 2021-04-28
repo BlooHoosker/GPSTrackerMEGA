@@ -7,6 +7,9 @@
 #define TRACKER_BUFFER_MEDIUM 64
 #define TRACKER_BUFFER_SHORT 32
 
+#define TRACKER_BUFFER_DATE 15
+#define TRACKER_BUFFER_TIME 15
+
 #define TRACKER_DEFAULT_TIMEOUT 2000
 #define TRACKER_SECOND 1000
 
@@ -37,25 +40,29 @@ public:
     */ 
     bool start(Stream &serial);
 
-    /*
-    * Waits until receives an AT sequence from module
-    * Received command is stored in buffer of size "size"
-    * TODO figure out if timeout is necessary
-    * Returns length of received command including \r\n
-    */ 
-    uint16_t receiveAT(char *buffer, size_t size, uint16_t timeout);
+    void receive();
     
     void processAT(const char *ATCommand);
 
     void checkBatteryPercentage();
 
-    void gsmSleep();
-
-    void gsmWake();
-
     void checkButton();
 
     void checkGSM();
+
+    void builtInLedOn();
+
+    void builtInLedOff();
+
+    void builtInLedFastBlink();
+
+    // void gsmSleep();
+
+    // void gsmWake();
+
+    // bool enableGsmSleepMode();
+
+    // bool disableGsmSleepMode();
 
 private:
 
@@ -70,6 +77,10 @@ private:
     char _latitude[TRACKER_BUFFER_SHORT];
     char _longitude[TRACKER_BUFFER_SHORT];
 
+    // 2021-02-18 (10 chars + \0) 23:01:08 (8 chars + \0)
+    char _date[TRACKER_BUFFER_DATE];
+    char _time[TRACKER_BUFFER_TIME];
+
     uint8_t _powerStatus;
     uint8_t _fixStatus;
     uint8_t _masterNumberSet;
@@ -77,6 +88,7 @@ private:
 
     uint8_t _batteryPercentage;
     bool _batteryWarningSent;
+
 
     void resetEEPROM();
 
@@ -151,6 +163,14 @@ private:
     * Returns 0 if \r\n sequence is not reached or timeout runs out
     */
     size_t readAT(char *buffer, size_t size, uint16_t *timeout);
+
+    /*
+    * Waits until receives an AT sequence from module
+    * Received command is stored in buffer of size "size"
+    * TODO figure out if timeout is necessary
+    * Returns length of received command including \r\n
+    */ 
+    uint16_t receiveAT(char *buffer, size_t size, uint16_t timeout);
 
     /*
     * Sends formatted AT command with "AT" and "\r\n"
@@ -369,13 +389,14 @@ private:
     */ 
     int8_t parseGPSFixStatus(const char * CGNSINF);
 
+    //bool getTimeStamp(char * timeStampText, size_t timeStampTextSize);
+
+    bool parseTimeAndDate(const char * CGNSINF, char * date, uint8_t dateSize, char * time, uint8_t timeSize);
+
     void setMapLinkSrc(const uint8_t linkSel);
 
     void getMapLinkSrc();
 
     void userSetMapLinkSrc(const uint8_t linkSel);
-
-    bool setGsmSleepMode();
-
 
 };

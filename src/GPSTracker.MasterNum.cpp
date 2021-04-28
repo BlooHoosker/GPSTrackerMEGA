@@ -72,10 +72,10 @@ void GPSTracker::getMasterNumber(){
 
     // Check if crc matches
     if(crc != EEPROM[CRC_ADDR]){
-        Serial.println("CRC don't match");
+        Serial.println("MASTER: CRC don't match");
         memset(_phoneNumber, 0, TRACKER_BUFFER_SHORT);
     } else {
-        Serial.print("Master loaded: ");
+        Serial.print("MASTER: ");
         Serial.println(_phoneNumber);
         _masterNumberSet = 1;
     }

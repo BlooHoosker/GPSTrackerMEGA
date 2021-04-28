@@ -24,10 +24,11 @@ void GPSTracker::userGPSPower(const char * SMSGPSPower){
     };
 
     Serial.println("USER POWER: Sending reply");
+    delay(1000);
     if (status){
-        if (!sendSMS("GPS POWERED UP", _phoneNumber)){
-            Serial.println("USER POWER: Failed to send sms");
-        }
+        // if (!sendSMS("GPS POWERED UP", _phoneNumber)){
+        //     Serial.println("USER POWER: Failed to send sms");
+        // }
     } else {
         if (!sendSMS("GPS POWERED DOWN", _phoneNumber)){
             Serial.println("USER POWER: Failed to send sms");
@@ -89,54 +90,68 @@ void GPSTracker::userStatus(){
     char fix[TRACKER_BUFFER_SHORT];
     char master[TRACKER_BUFFER_SHORT];
     char link[TRACKER_BUFFER_SHORT];
+    char battery[TRACKER_BUFFER_SHORT];
+    char timeStamp[TRACKER_BUFFER_SHORT];
 
     memset(master, 0, TRACKER_BUFFER_SHORT); 
     memset(power, 0, TRACKER_BUFFER_SHORT);
     memset(fix, 0, TRACKER_BUFFER_SHORT);
     memset(link, 0, TRACKER_BUFFER_SHORT);
+    memset(battery, 0, TRACKER_BUFFER_SHORT);
+    memset(timeStamp, 0, TRACKER_BUFFER_SHORT);
 
+    // Updating internal status variables
     if (!updateGPSStatusInfo()){
         sendSMS("ERROR GETTING GPS INFO", _phoneNumber);
         return;
     }
 
+    // GPS power status
     if (_powerStatus){
         strcpy(power, "GPS POWER: ON");
     } else {
         strcpy(power, "GPS POWER: OFF");
     }
 
+    // GPS Fix status
     if (_fixStatus){
         strcpy(fix, "GPS FIX: FIX AQUIRED");
-
-        if (strlen(_latitude) && strlen(_longitude)){
-            sprintf(position, "POSITION: %s, %s",_latitude, _longitude);
-        } else {
-            strcpy(position, "POSITION: NO DATA");
-        }
     } else {
         strcpy(fix, "GPS FIX: NO FIX"); 
-
-        if (strlen(_latitude) && strlen(_longitude)){
-            sprintf(position, "LAST POSITION:\n %s, %s",_latitude, _longitude);
-        } else {
-            strcpy(position, "LAST POSITION: NO DATA");
-        }
     }
 
+    // Position coordinates
+    if (strlen(_latitude) && strlen(_longitude)){
+        sprintf(position, "POSITION:\n %s, %s",_latitude, _longitude);
+    } else {
+        strcpy(position, "POSITION: NO DATA");
+    }
+
+    // Date and time
+    if (strlen(_date) && strlen(_time)){
+        sprintf(timeStamp, "TIMESTAMP: %s %s UTC", _date, _time);
+    } else {
+        sprintf(timeStamp, "TIMESTAMP: NO DATA");
+    }
+
+    // Master number status
     if (_masterNumberSet){
         strcpy(master, "MASTER NUM: SET");
     } else {
         strcpy(master, "MASTER NUM: NOT SET");
     }
 
+    // Map link selection
     if (_mapLinkSrc){
         strcpy(link, "MAP LINK: OPENSTREETMAP");
     } else {
         strcpy(link, "MAP LINK: GOOGLE");
     }
 
-    sprintf(text, "%s\r\n%s\r\n%s\r\n%s\r\n%s", power, fix, position, master, link);
+    // Battery status
+    sprintf(battery, "BATTERY: %d%%", _batteryPercentage);
+
+    sprintf(text, "%s\r\n%s\r\n%s\r\n%s\r\n%s\r\n%s\r\n%s", power, fix, timeStamp, position, master, link, battery);
 
     Serial.println("USER STATUS: Sending status info");
     if(!sendSMS(text, _phoneNumber)){

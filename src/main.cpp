@@ -9,6 +9,7 @@
 //SoftwareSerial trackerSerial = SoftwareSerial(SIM_TX, SIM_RX);
 GPSTracker tracker = GPSTracker(SIM_RST, SIM_PWR, SIM_DTR, RST_BTN, BATTERY_VPIN);
 
+// Empty interrupt routine for button
 void interruptRoutine(){}
 
 // Disabling SPI, TWI, USART2, USART3 because they are not used
@@ -19,29 +20,13 @@ void lowPowerConfig(){
   power_usart3_disable();
 }
 
-void builtInLedOn(){
-    digitalWrite(LED_BUILTIN, HIGH);
-}
-
-void builtInLedOff(){
-    digitalWrite(LED_BUILTIN, LOW);
-}
-
-void fastBlink(){
-  uint8_t state = 0;
-  pinMode(LED_BUILTIN, OUTPUT);
-  while (1){
-    digitalWrite(LED_BUILTIN, state);
-    delay(200);
-    state = !state;
-  }
-}
-
 void setup() {
   Serial.begin(9600);
+
+  // Serial.println("Testing...");
+  // tracker.test();
+
   // Pinmode for built in LED
-  pinMode(LED_BUILTIN, OUTPUT);
-  builtInLedOn();
 
   Serial.println("SETUP: Arduino config");
 
@@ -61,36 +46,27 @@ void setup() {
     Serial.println("SETUP: Start failed");
 
     wdt_enable(WDTO_4S); // Arduino restarts after 4 seconds
-    fastBlink(); // Fast blinking of built in LED
+    tracker.builtInLedFastBlink(); // Fast blinking of built in LED
   }
 
   // Disabling built in LED
-  builtInLedOff();
+  tracker.builtInLedOff();
 
   Serial.println("SETUP: Start successful");
   Serial.println("=====================================================");
   Serial.println();
-
-  // Serial.println("Testing...");
-  // tracker.test();
 }
 
-char trackerReceiveBuffer[TRACKER_BUFFER_SHORT];
 void loop() {
 
   Serial.println("Receiving...");
 
   // Entering idle sleep mode for 8 seconds, wakes up on UART communication
   LowPower.idle(SLEEP_8S, ADC_OFF, TIMER5_OFF, TIMER4_OFF, TIMER3_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_OFF, SPI_ON, USART3_ON, USART2_ON, USART1_ON, USART0_OFF, TWI_ON);
-
-  // Checking if UART has received any data
-  if (tracker.receiveAT(trackerReceiveBuffer, TRACKER_BUFFER_SHORT, 100)){
-    Serial.print(trackerReceiveBuffer);
-    builtInLedOn();
-    tracker.processAT(trackerReceiveBuffer);  
-    builtInLedOff();
-  }
-
+  
+  // Receiving any data available on serial link
+  tracker.receive();
+  
   // Checking reset button status
   tracker.checkButton();
 
@@ -100,7 +76,7 @@ void loop() {
   // Checking GSM status
   tracker.checkGSM();
 
-  tracker.printStatus(); 
+  tracker.printStatus();
   Serial.println("=====================================================");
   Serial.println();
 

@@ -27,6 +27,60 @@ bool GPSTracker::powerGPS(bool on){
     return true;
 }
 
+bool GPSTracker::updateGPSStatusInfo(){
+
+    char buffer[TRACKER_BUFFER_LARGE];
+    char latitude[TRACKER_BUFFER_SHORT];
+    char longitude[TRACKER_BUFFER_SHORT];
+    char time[TRACKER_BUFFER_TIME];
+    char date[TRACKER_BUFFER_DATE];
+
+    int8_t powerStatus = 0;
+    int8_t fixStatus = 0;
+
+    _powerStatus = 0;   
+    _fixStatus = 0;
+
+    if (!getGPSInfo(buffer, TRACKER_BUFFER_LARGE)){
+        Serial.println("UPDATE: Failed to get info");
+        return false;
+    }
+
+    powerStatus = parseGPSPowerStatus(buffer);
+    if (powerStatus == -1) {
+        Serial.println("UPDATE: Failed to parse power status");
+        return false;        
+    } 
+
+    _powerStatus = powerStatus;
+    if (!powerStatus){
+        return true;
+    }
+
+    fixStatus = parseGPSFixStatus(buffer);
+    if (fixStatus == -1){
+        Serial.println("UPDATE: Failed to parse fix status");
+        return false;           
+    }
+
+    _fixStatus = fixStatus;
+    if (!fixStatus) return true;
+
+    if (!parseGPSPosition(buffer, latitude, longitude, TRACKER_BUFFER_SHORT)){
+        Serial.println("UPDATE: Failed to parse position");
+        return false;
+    }
+    if(!parseTimeAndDate(buffer, date, TRACKER_BUFFER_DATE, time, TRACKER_BUFFER_TIME)){
+        Serial.println("UPDATE: Failed to parse time and date");
+        return false;
+    }
+    strncpy(_date, date, TRACKER_BUFFER_DATE);
+    strncpy(_time, time, TRACKER_BUFFER_TIME);
+    strcpy(_latitude, latitude);
+    strcpy(_longitude, longitude);
+    return true;
+}
+
 //+CGNSINF: 1,1,20210218230108.000,50.468168,13.421028,385.700,3.39,209.6,1,,5.0,5.1,1.0,,9,3,,,27,,
 bool  GPSTracker::getGPSInfo(char * buffer, size_t bufferSize){
 
@@ -213,51 +267,56 @@ int8_t GPSTracker::parseGPSPowerStatus(const char * CGNSINF){
     } 
 }
 
-bool GPSTracker::updateGPSStatusInfo(){
+// 2021-02-18 (10 chars) 23:01:08 (8 chars)
+bool GPSTracker::parseTimeAndDate(const char * CGNSINF, char * date, uint8_t dateSize, char * time, uint8_t timeSize){
+    
+    //+CGNSINF: 1,1,20210218230108.000,50.468168,13.421028,385.700,3.39,209.6,1,,5.0,5.1,1.0,,9,3,,,27,,
+    char timeStampText[TRACKER_BUFFER_SHORT];
+    memset(timeStampText, 0, TRACKER_BUFFER_SHORT);
 
-    char latitude[TRACKER_BUFFER_SHORT];
-    char longitude[TRACKER_BUFFER_SHORT];
-    char buffer[TRACKER_BUFFER_LARGE];
-
-    int8_t powerStatus = 0;
-    int8_t fixStatus = 0;
-
-    _powerStatus = 0;   
-    _fixStatus = 0;
-
-    if (!getGPSInfo(buffer, TRACKER_BUFFER_LARGE)){
-        Serial.println("UPDATE: Failed to get info");
+    // Parse timestamp text from CGNSINF sequence
+    if (!parseGPSValue(CGNSINF, 2, timeStampText, TRACKER_BUFFER_SHORT)){
+        Serial.println("GPS TimeAndDate: Failed to timestamp");
         return false;
     }
 
-    powerStatus = parseGPSPowerStatus(buffer);
-    if (powerStatus == -1) {
-        Serial.println("UPDATE: Failed to parse power status");
-        return false;        
-    } 
-
-    _powerStatus = powerStatus;
-    if (!powerStatus){
-        return true;
-    }
-
-    fixStatus = parseGPSFixStatus(buffer);
-    if (fixStatus == -1){
-        Serial.println("UPDATE: Failed to parse fix status");
-        return false;           
-    }
-
-    _fixStatus = fixStatus;
-    if (!fixStatus) return true;
-
-    if (!parseGPSPosition(buffer, latitude, longitude, TRACKER_BUFFER_LARGE)){
-        Serial.println("UPDATE: Failed to parse position");
+    // Check timetext length nad buffer sizes
+    if (strlen(timeStampText) <= 13 || timeSize <= 8 || dateSize <= 10){
+        Serial.println("GPS TimeAndDate: Buffer too small");
         return false;
     }
 
-    strcpy(_latitude, latitude);
-    strcpy(_longitude, longitude);
+    // Check if timestamp text is only numbers
+    for (uint8_t i = 0; i < 14; i++){
+        if (timeStampText[i] < 48 || timeStampText[i] > 57){
+            Serial.println("GPS TimeAndDate: Timestamp text corrupted");
+            return false;
+        }
+    }
 
+    // 20210218 230 1 0 8
+    // 01234567 8910111213
+    date[0] = timeStampText[0];
+    date[1] = timeStampText[1];
+    date[2] = timeStampText[2];
+    date[3] = timeStampText[3];
+    date[4] = '-';
+    date[5] = timeStampText[4];
+    date[6] = timeStampText[5];
+    date[7] = '-';
+    date[8] = timeStampText[6];
+    date[9] = timeStampText[7];
+    date[10] = '\0';
+
+    time[0] = timeStampText[8];
+    time[1] = timeStampText[9];
+    time[2] = ':';
+    time[3] = timeStampText[10];
+    time[4] = timeStampText[11];
+    time[5] = ':';
+    time[6] = timeStampText[12];
+    time[7] = timeStampText[13]; 
+    time[8] = '\0';
     return true;
 }
 
