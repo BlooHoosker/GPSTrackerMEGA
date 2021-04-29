@@ -37,8 +37,8 @@ bool GPSTracker::setMasterNumber(const char * phoneNumber){
     EEPROM.update(MASTERSET_ADDR, 0xFF);
     _masterNumberSet = 1;
 
-    Serial.print("Master number set: ");
-    Serial.println(_phoneNumber);
+    DEBUG_PRINT("Master number set: ");
+    DEBUG_PRINTLN(_phoneNumber);
 
     return true;
 }
@@ -72,11 +72,11 @@ void GPSTracker::getMasterNumber(){
 
     // Check if crc matches
     if(crc != EEPROM[CRC_ADDR]){
-        Serial.println("MASTER: CRC don't match");
+        DEBUG_PRINTLN("MASTER: CRC don't match");
         memset(_phoneNumber, 0, TRACKER_BUFFER_SHORT);
     } else {
-        Serial.print("MASTER: ");
-        Serial.println(_phoneNumber);
+        DEBUG_PRINT("MASTER: ");
+        DEBUG_PRINTLN(_phoneNumber);
         _masterNumberSet = 1;
     }
 }

@@ -42,13 +42,13 @@ bool GPSTracker::updateGPSStatusInfo(){
     _fixStatus = 0;
 
     if (!getGPSInfo(buffer, TRACKER_BUFFER_LARGE)){
-        Serial.println("UPDATE: Failed to get info");
+        DEBUG_PRINTLN("UPDATE: Failed to get info");
         return false;
     }
 
     powerStatus = parseGPSPowerStatus(buffer);
     if (powerStatus == -1) {
-        Serial.println("UPDATE: Failed to parse power status");
+        DEBUG_PRINTLN("UPDATE: Failed to parse power status");
         return false;        
     } 
 
@@ -59,7 +59,7 @@ bool GPSTracker::updateGPSStatusInfo(){
 
     fixStatus = parseGPSFixStatus(buffer);
     if (fixStatus == -1){
-        Serial.println("UPDATE: Failed to parse fix status");
+        DEBUG_PRINTLN("UPDATE: Failed to parse fix status");
         return false;           
     }
 
@@ -67,13 +67,15 @@ bool GPSTracker::updateGPSStatusInfo(){
     if (!fixStatus) return true;
 
     if (!parseGPSPosition(buffer, latitude, longitude, TRACKER_BUFFER_SHORT)){
-        Serial.println("UPDATE: Failed to parse position");
+        DEBUG_PRINTLN("UPDATE: Failed to parse position");
         return false;
     }
+
     if(!parseTimeAndDate(buffer, date, TRACKER_BUFFER_DATE, time, TRACKER_BUFFER_TIME)){
-        Serial.println("UPDATE: Failed to parse time and date");
+        DEBUG_PRINTLN("UPDATE: Failed to parse time and date");
         return false;
     }
+    
     strncpy(_date, date, TRACKER_BUFFER_DATE);
     strncpy(_time, time, TRACKER_BUFFER_TIME);
     strcpy(_latitude, latitude);
@@ -87,12 +89,12 @@ bool  GPSTracker::getGPSInfo(char * buffer, size_t bufferSize){
     // Send AT requesting GPS information sequence
     sendAT("+CGNSINF");
     if(!waitFor(buffer, bufferSize, TRACKER_DEFAULT_TIMEOUT, "+CGNSINF")){
-        Serial.println("GPS INFO: Failed to receive reply");
+        DEBUG_PRINTLN("GPS INFO: Failed to receive reply");
         return false;
     }
 
     if (!waitFor("OK")){
-        Serial.println("GPS INFO: Failed to receive OK");
+        DEBUG_PRINTLN("GPS INFO: Failed to receive OK");
         return false;
     }
 
@@ -114,7 +116,7 @@ bool GPSTracker::getGPSPosition(char * latitude, char * longitude, size_t buffer
 
     if (!getGPSInfo(buffer, TRACKER_BUFFER_LARGE)) return false;
 
-    Serial.print(buffer);
+    DEBUG_PRINT(buffer);
 
     // Checking GPS power status
     if (parseGPSPowerStatus(buffer) != 1){
@@ -158,13 +160,13 @@ bool GPSTracker::parseGPSValue(const char * CGNSINF, uint8_t valuePosition, char
 
     // Checking if length of CGNSINF sequence is longer than prefix
     if (length <= prefixLength){
-        Serial.println("GPS VALUE: Wrong format");
+        DEBUG_PRINTLN("GPS VALUE: Wrong format");
         return false;
     }
 
     // Checking if prefix is correct
     if (strncmp(CGNSINF, prefix, prefixLength) != 0){
-        Serial.println("GPS VALUE: Wrong AT sequence");
+        DEBUG_PRINTLN("GPS VALUE: Wrong AT sequence");
         return false;
     }
 
@@ -177,7 +179,7 @@ bool GPSTracker::parseGPSValue(const char * CGNSINF, uint8_t valuePosition, char
 
     // Checks if position was reached
     if (position != valuePosition) {
-        Serial.println("GPS VALUE: Failed to reach requested position");
+        DEBUG_PRINTLN("GPS VALUE: Failed to reach requested position");
         return false;
     }
 
@@ -192,7 +194,7 @@ bool GPSTracker::parseGPSValue(const char * CGNSINF, uint8_t valuePosition, char
         if (CGNSINF[index] == ',' || CGNSINF[index] == '\r') break;
         
         if (valueIndex >= valueSize){
-            Serial.println("GPS VALUE: Value larger than buffer size1");
+            DEBUG_PRINTLN("GPS VALUE: Value larger than buffer size1");
             return false;
         } 
         value[valueIndex] = CGNSINF[index];
@@ -204,7 +206,7 @@ bool GPSTracker::parseGPSValue(const char * CGNSINF, uint8_t valuePosition, char
 
     // Adds \0 at the end
     if (valueIndex >= valueSize){
-        Serial.println("GPS VALUE: Value larger than buffer size2");
+        DEBUG_PRINTLN("GPS VALUE: Value larger than buffer size2");
         return false;
     } 
     value[valueIndex] = '\0';
@@ -215,12 +217,12 @@ bool GPSTracker::parseGPSValue(const char * CGNSINF, uint8_t valuePosition, char
 bool GPSTracker::parseGPSPosition(const char * CGNSINF, char * latitude, char * longitude, size_t bufferSize){
 
     if (!parseGPSValue(CGNSINF, 3, latitude, bufferSize)){
-        Serial.println("GPS POSITION: Failed to parse latitude");
+        DEBUG_PRINTLN("GPS POSITION: Failed to parse latitude");
         return false;
     }
 
     if (!parseGPSValue(CGNSINF, 4, longitude, bufferSize)){
-        Serial.println("GPS POSITION: Failed to parse longitude");
+        DEBUG_PRINTLN("GPS POSITION: Failed to parse longitude");
         return false;
     }
 
@@ -232,7 +234,7 @@ int8_t  GPSTracker::parseGPSFixStatus(const char * CGNSINF){
     char status[2] = "\0";
 
     if (!parseGPSValue(CGNSINF, 1, status, 2)){
-        Serial.println("GPS FIX: Failed to parse power status");
+        DEBUG_PRINTLN("GPS FIX: Failed to parse power status");
         return false;
     }
 
@@ -252,7 +254,7 @@ int8_t GPSTracker::parseGPSPowerStatus(const char * CGNSINF){
     char status[2] = "\0";
 
     if (!parseGPSValue(CGNSINF, 0, status, 2)){
-        Serial.println("GPS POWER: Failed to parse power status");
+        DEBUG_PRINTLN("GPS POWER: Failed to parse power status");
         return false;
     }
 
@@ -276,20 +278,20 @@ bool GPSTracker::parseTimeAndDate(const char * CGNSINF, char * date, uint8_t dat
 
     // Parse timestamp text from CGNSINF sequence
     if (!parseGPSValue(CGNSINF, 2, timeStampText, TRACKER_BUFFER_SHORT)){
-        Serial.println("GPS TimeAndDate: Failed to timestamp");
+        DEBUG_PRINTLN("GPS TimeAndDate: Failed to timestamp");
         return false;
     }
 
     // Check timetext length nad buffer sizes
     if (strlen(timeStampText) <= 13 || timeSize <= 8 || dateSize <= 10){
-        Serial.println("GPS TimeAndDate: Buffer too small");
+        DEBUG_PRINTLN("GPS TimeAndDate: Buffer too small");
         return false;
     }
 
     // Check if timestamp text is only numbers
     for (uint8_t i = 0; i < 14; i++){
         if (timeStampText[i] < 48 || timeStampText[i] > 57){
-            Serial.println("GPS TimeAndDate: Timestamp text corrupted");
+            DEBUG_PRINTLN("GPS TimeAndDate: Timestamp text corrupted");
             return false;
         }
     }

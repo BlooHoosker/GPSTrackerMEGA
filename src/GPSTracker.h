@@ -3,6 +3,13 @@
 #include <Arduino.h>
 #include <Stream.h>
 
+// #define DEBUG_PRINTLN(s) Serial.println(s);
+// #define DEBUG_PRINT(s) Serial.print(s);
+#ifndef DEBUG_PRINTLN
+    #define DEBUG_PRINTLN(s)
+    #define DEBUG_PRINT(s)
+#endif
+
 #define TRACKER_BUFFER_LARGE 200
 #define TRACKER_BUFFER_MEDIUM 64
 #define TRACKER_BUFFER_SHORT 32
@@ -29,7 +36,7 @@ public:
     void printStatus();
 
     // Provide reset and power pin
-    GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN, uint8_t SIM_DTR_PIN, uint8_t RST_BTN_PIN, uint8_t BATTERY_PIN);
+    GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN, /*uint8_t SIM_DTR_PIN,*/ uint8_t RST_BTN_PIN, uint8_t BATTERY_PIN);
     ~GPSTracker();
     
     /* 
@@ -56,20 +63,20 @@ public:
 
     void builtInLedFastBlink();
 
-    // void gsmSleep();
+    void gsmSleep();
 
-    // void gsmWake();
+    void gsmWake();
 
-    // bool enableGsmSleepMode();
+    bool enableGsmSleepMode();
 
-    // bool disableGsmSleepMode();
+    bool disableGsmSleepMode();
 
 private:
 
     Stream* _serialPort;
     uint8_t _resetPin;
     uint8_t _powerPin;
-    uint8_t _dtrPin;
+    //uint8_t _dtrPin;
     uint8_t _buttonPin;
     uint8_t _batteryPin;
 
@@ -398,5 +405,9 @@ private:
     void getMapLinkSrc();
 
     void userSetMapLinkSrc(const uint8_t linkSel);
+
+    uint8_t getBatteryPercentage();
+
+    bool updateStatus();
 
 };

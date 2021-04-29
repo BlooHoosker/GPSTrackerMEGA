@@ -2,7 +2,7 @@
 #include <EEPROM.h>
 #include <avr/wdt.h>
 
-GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN, uint8_t SIM_DTR_PIN, uint8_t RST_BTN_PIN, uint8_t BATTERY_PIN){
+GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN,/* uint8_t SIM_DTR_PIN,*/ uint8_t RST_BTN_PIN, uint8_t BATTERY_PIN){
 
 	// Enabling built in LED
 	pinMode(LED_BUILTIN, OUTPUT);
@@ -16,12 +16,12 @@ GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN, uint8_t SIM_D
     pinMode(_powerPin, OUTPUT);
     digitalWrite(_powerPin, LOW);
 
-	_dtrPin = SIM_DTR_PIN;
-	pinMode(_dtrPin, OUTPUT);
-    digitalWrite(_dtrPin, LOW);
+	// _dtrPin = SIM_DTR_PIN;
+	// pinMode(_dtrPin, OUTPUT);
+    // digitalWrite(_dtrPin, LOW);
 
 	_buttonPin = RST_BTN_PIN;
-	pinMode(_dtrPin, INPUT_PULLUP);
+	pinMode(_buttonPin, INPUT_PULLUP);
 
 	_batteryPin = BATTERY_PIN;
 
@@ -40,26 +40,31 @@ GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN, uint8_t SIM_D
 
 GPSTracker::~GPSTracker(){}
 
+bool GPSTracker::updateStatus(){
+	_batteryPercentage = getBatteryPercentage();
+	return updateGPSStatusInfo();
+}
+
 void GPSTracker::printStatus(){
 	updateGPSStatusInfo();
-	Serial.print("Latitude: ");
-	Serial.println(_latitude);
-	Serial.print("Longitude: ");
-	Serial.println(_longitude);
-	Serial.print("Timestamp: ");
-	Serial.print(_date);
-	Serial.print(" ");
-	Serial.println(_time);
-	Serial.print("Power status: ");
-	Serial.println(_powerStatus);
-	Serial.print("Fix status: ");
-	Serial.println(_fixStatus);
-	Serial.print("Master set: ");
-	Serial.println(_masterNumberSet);
-	Serial.print("Link source: ");
-	Serial.println(_mapLinkSrc);
-	Serial.print("Battery: ");
-	Serial.println(_batteryPercentage);
+	DEBUG_PRINT("Latitude: ");
+	DEBUG_PRINTLN(_latitude);
+	DEBUG_PRINT("Longitude: ");
+	DEBUG_PRINTLN(_longitude);
+	DEBUG_PRINT("Timestamp: ");
+	DEBUG_PRINT(_date);
+	DEBUG_PRINT(" ");
+	DEBUG_PRINTLN(_time);
+	DEBUG_PRINT("Power status: ");
+	DEBUG_PRINTLN(_powerStatus);
+	DEBUG_PRINT("Fix status: ");
+	DEBUG_PRINTLN(_fixStatus);
+	DEBUG_PRINT("Master set: ");
+	DEBUG_PRINTLN(_masterNumberSet);
+	DEBUG_PRINT("Link source: ");
+	DEBUG_PRINTLN(_mapLinkSrc);
+	DEBUG_PRINT("Battery: ");
+	DEBUG_PRINTLN(_batteryPercentage);
 }
 
 void GPSTracker::resetEEPROM(){
@@ -83,21 +88,21 @@ bool GPSTracker::start(Stream &serial){
 
     _serialPort = &serial;
 
-    Serial.println("START: Powering up..");
+    DEBUG_PRINTLN("START: Powering up..");
     
     // Power on module
     bool powerStatus = powerOn();
 
     if (!powerStatus){
-        Serial.println("START: Failed to power up");
+        DEBUG_PRINTLN("START: Failed to power up");
         return false;
     }
 
-    Serial.println("START: Initializing..");
+    DEBUG_PRINTLN("START: Initializing..");
     
     // Initialize module
     if (!init()) {
-        Serial.println("START: Initialization Failed");
+        DEBUG_PRINTLN("START: Initialization Failed");
         return false;
     }
 
@@ -110,10 +115,10 @@ bool GPSTracker::start(Stream &serial){
 			getMasterNumber();
 			resetMasterNumber();
 		}
-		Serial.println("RESTART: Sending reply");
+		DEBUG_PRINTLN("RESTART: Sending reply");
 		sendSMS("RESTART COMPLETE", _phoneNumber);
-		Serial.println("START: Restart complete");
-		Serial.println(_phoneNumber);
+		DEBUG_PRINTLN("START: Restart complete");
+		DEBUG_PRINTLN(_phoneNumber);
 	}
 	
 	// Resetting restart flag
@@ -166,30 +171,30 @@ bool GPSTracker::init(){
 
 	// Disable echoing of sent commands
 	if (!setEchoMode(false)){
-		Serial.println("INIT: Echo not disabled");
+		DEBUG_PRINTLN("INIT: Echo not disabled");
         return false;
 	} 
 
 	// Set SMS message format to "Text"
 	if (!setSMSMessageMode(true)) {
-		Serial.println("INIT: Failed to set SMS text mode");
+		DEBUG_PRINTLN("INIT: Failed to set SMS text mode");
 		return false;
 	}
 
 	// Set storage for SMS to module itself
 	if (!setSmsStorage()){
-		Serial.println("INIT: Failed to set storage");
+		DEBUG_PRINTLN("INIT: Failed to set storage");
 		return false;
 	}
 
 	// Deleting all messages from module to create space
 	if (!deleteAllSMS()){
-		Serial.println("INIT: Failed to receive OK delsms");
+		DEBUG_PRINTLN("INIT: Failed to receive OK delsms");
 		return false;
 	}
 
 	// if (!enableGsmSleepMode()){
-	// 	Serial.println("INIT: Failed to receive OK sleep mode");
+	// 	DEBUG_PRINTLN("INIT: Failed to receive OK sleep mode");
 	// 	return false;
 	// }
 
@@ -200,7 +205,7 @@ void GPSTracker::receive(){
 	char receiveBuffer[TRACKER_BUFFER_SHORT];
 	if (receiveAT(receiveBuffer, TRACKER_BUFFER_SHORT, 100)){
 		//tracker.gsmWake();
-		Serial.print(receiveBuffer);
+		DEBUG_PRINT(receiveBuffer);
 		builtInLedOn();
 		processAT(receiveBuffer);  
 		builtInLedOff();
@@ -209,6 +214,8 @@ void GPSTracker::receive(){
 }
 
 void GPSTracker::checkButton(){
+
+	DEBUG_PRINTLN("BUTTON: Check");
 
 	uint8_t sample_1 = digitalRead(_buttonPin);
 	delay(10);
@@ -221,7 +228,7 @@ void GPSTracker::checkButton(){
 		return;
 	}
 
-	Serial.println("BUTTON: Pressed");
+	DEBUG_PRINTLN("BUTTON: Pressed");
 	delay(3000);
 
 	sample_1 = digitalRead(_buttonPin);
@@ -243,10 +250,13 @@ void GPSTracker::checkGSM(){
 
 	sendAT();
 
+	DEBUG_PRINTLN("GSM: Check");
+
 	if(waitFor("OK")){
 		return;
 	}
 
+	DEBUG_PRINTLN("GSM: Restart");
 	reset();
 	delay(500);
 	if (powerOn()){

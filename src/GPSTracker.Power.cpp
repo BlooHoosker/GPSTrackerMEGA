@@ -50,23 +50,7 @@ void GPSTracker::reset(){
 
 void GPSTracker::checkBatteryPercentage(){
 
-	unsigned long sum = 0;
-	float voltage = 0;
-
-	for (int i = 0; i < 100; i++){
-		sum += analogRead(_batteryPin);
-	}
-
-	voltage = (sum / 100) * (5.0 / 1023.0);
-
-	// todo map to 4.2-3.4
-	_batteryPercentage = (voltage - BATTERY_VMIN) * 100 / (BATTERY_VMAX - BATTERY_VMIN);
-
-	if (_batteryPercentage > 100) {
-		_batteryPercentage = 100;
-	} else if (_batteryPercentage < 0){
-		_batteryPercentage = 0;
-	}
+	_batteryPercentage = getBatteryPercentage();
 
 	if (_batteryPercentage < 20){
 		if (!_batteryWarningSent){
@@ -76,6 +60,29 @@ void GPSTracker::checkBatteryPercentage(){
 	} else if (_batteryPercentage > 25){
 		_batteryWarningSent = false;
 	}
+}
+
+uint8_t GPSTracker::getBatteryPercentage(){
+	unsigned long sum = 0;
+	float voltage = 0;
+	uint8_t batteryPercentage;
+
+	for (int i = 0; i < 100; i++){
+		sum += analogRead(_batteryPin);
+	}
+
+	voltage = (sum / 100) * (5.0 / 1023.0);
+
+	// todo map to 4.2-3.4
+	batteryPercentage = (voltage - BATTERY_VMIN) * 100 / (BATTERY_VMAX - BATTERY_VMIN);
+
+	if (batteryPercentage > 100) {
+		batteryPercentage = 100;
+	} else if (batteryPercentage < 0){
+		batteryPercentage = 0;
+	}
+
+	return batteryPercentage;
 }
 
 // bool GPSTracker::enableGsmSleepMode(){

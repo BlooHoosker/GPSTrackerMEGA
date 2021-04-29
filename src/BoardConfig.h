@@ -5,7 +5,7 @@
 
 #define SIM_PWR		9	///< GSM Module D9
 #define SIM_RST		8	///< GSM Module RST
-#define SIM_DTR     7   ///< GSM Module DTR
+#define SIM_DTR     6   ///< GSM Module DTR
 #define RST_BTN     21  ///< GSM Module RESET BUTTON
 
 #define BATTERY_VPIN A5

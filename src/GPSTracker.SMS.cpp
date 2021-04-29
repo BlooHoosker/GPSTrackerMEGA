@@ -66,66 +66,66 @@ void GPSTracker::ATSMS(const char * ATCMTI){
     // Get SMS index in storage
     int8_t index = parseSMSIndex(ATCMTI);
     if (index < 0){
-        Serial.println("ATSMS: Failed to parse index");
+        DEBUG_PRINTLN("ATSMS: Failed to parse index");
         return;
     }
 
     // Read SMS from module storage at index
     if (!readSMS(index, text, phoneNumber, TRACKER_BUFFER_LARGE, TRACKER_BUFFER_SHORT)){
-        Serial.println("ATSMS: Failed to read SMS");
+        DEBUG_PRINTLN("ATSMS: Failed to read SMS");
         return;
     }
 
     // If master number is set
     if (_masterNumberSet){
-        Serial.println("ATSMS: Master set");
+        DEBUG_PRINTLN("ATSMS: Master set");
         // Checks if master number and number of received SMS match
         if (strcmp(phoneNumber, _phoneNumber)) {
-            Serial.println("ATSMS: Not a master number");
+            DEBUG_PRINTLN("ATSMS: Not a master number");
             return;
         }
     } else {
-        Serial.println("ATSMS: Master not set");
+        DEBUG_PRINTLN("ATSMS: Master not set");
         strcpy(_phoneNumber, phoneNumber);
     }
 
     // Get which command SMS text contains
     switch(decodeSMSText(text)){
         case 0: //LOCATION
-            Serial.println("ATSMS: LOCATION");
+            DEBUG_PRINTLN("ATSMS: LOCATION");
             userLocation();
             break;
         case 1: // STATUS
-            Serial.println("ATSMS: STATUS");
+            DEBUG_PRINTLN("ATSMS: STATUS");
             userStatus();
             break;
         case 2: // GPS ON/OFF
-            Serial.println("ATSMS: GPS POWER");
+            DEBUG_PRINTLN("ATSMS: GPS POWER");
             userGPSPower(text);
             break;
         case 3: // SET MASTER NUMBER
-            Serial.println("ATSMS: SET MASTER");
+            DEBUG_PRINTLN("ATSMS: SET MASTER");
             userSetMasterNumber(phoneNumber);
             break;
         case 4: // SET MASTER NUMBER
-            Serial.println("ATSMS: RESET MASTER");
+            DEBUG_PRINTLN("ATSMS: RESET MASTER");
             userResetMasterNumber();
             break;
         case 5: // RESTART
-            Serial.println("ATSMS: RESTART");
+            DEBUG_PRINTLN("ATSMS: RESTART");
             restart();
             break;
         case 6:
-            Serial.println("ATSMS: GOOGLE");
+            DEBUG_PRINTLN("ATSMS: GOOGLE");
             userSetMapLinkSrc(0);
             break;
         case 7:
-            Serial.println("ATSMS: OPENSTREETMAP");
+            DEBUG_PRINTLN("ATSMS: OPENSTREETMAP");
             userSetMapLinkSrc(1);
             break;
         default: // Unknown command
             sendSMS("INVALID COMMAND", _phoneNumber);
-            Serial.println("ATSMS: UNKNOWN");
+            DEBUG_PRINTLN("ATSMS: UNKNOWN");
             break;
     }
 
@@ -148,14 +148,14 @@ bool GPSTracker::sendSMS(const char * text, const char * phoneNumber){
 
     // Checking length, max SMS length is 160
     if (strlen(text) > 160){
-        Serial.println("SEND SMS: SMS text is too long");
+        DEBUG_PRINTLN("SEND SMS: SMS text is too long");
         return false;
     }
 
     // Creating AT command sequence
     memset(buffer, 0, TRACKER_BUFFER_LARGE);
     if (sprintf(buffer, "+CMGS=\"%s\"", phoneNumber) <= 0){
-        Serial.println("SEND SMS: Failed to create CMGS sequence");
+        DEBUG_PRINTLN("SEND SMS: Failed to create CMGS sequence");
         return false;
     }
 
@@ -163,7 +163,7 @@ bool GPSTracker::sendSMS(const char * text, const char * phoneNumber){
     // Timeout 60s as per documentation
     sendAT(buffer);
     if(!waitForPromt(60L*TRACKER_SECOND)){
-        Serial.println("SEND SMS: Failed to receive SMS text promt");
+        DEBUG_PRINTLN("SEND SMS: Failed to receive SMS text promt");
         return false;
     }
 
@@ -173,12 +173,12 @@ bool GPSTracker::sendSMS(const char * text, const char * phoneNumber){
     
     // Waiting for confirmation sequence
     if(!waitFor("+CMGS", 60L*TRACKER_SECOND)){
-        Serial.println("SEND SMS: Failed to receive SMS text confirmation");
+        DEBUG_PRINTLN("SEND SMS: Failed to receive SMS text confirmation");
         return false;
     }
 
     // while(receiveAT(buffer, TRACKER_BUFFER_SIZE, 60L*TRACKER_SECOND)){ 
-    //     Serial.print(buffer);
+    //     DEBUG_PRINT(buffer);
 
     //     if (compareAT(buffer, "+CMGS")){
     //         break;
@@ -186,12 +186,12 @@ bool GPSTracker::sendSMS(const char * text, const char * phoneNumber){
     // }
 
     // if (!compareAT(buffer, "+CMGS")){
-    //         Serial.println("SEND SMS: Failed to receive SMS text confirmation");
+    //         DEBUG_PRINTLN("SEND SMS: Failed to receive SMS text confirmation");
     //         return false;
     // }
     
     if (!waitFor("OK")){
-        Serial.println("SEND SMS: Failed to receive OK");
+        DEBUG_PRINTLN("SEND SMS: Failed to receive OK");
         return false;
     }
 
@@ -238,24 +238,24 @@ bool GPSTracker::readSMS(uint8_t smsIndex, char * text, char * phoneNumber, size
 
     // Wait for CMGR reply
     if (!waitFor(text, TRACKER_BUFFER_LARGE, 5*TRACKER_SECOND, "+CMGR")){
-        Serial.println("READ SMS: Failed to receive SMS AT sequence");
+        DEBUG_PRINTLN("READ SMS: Failed to receive SMS AT sequence");
         return false;
     }
 
     // Parsing phone number from CMGR
     if (!parseSMSPhoneNumber(text, phoneNumber, TRACKER_BUFFER_SHORT)){
-        Serial.println("READ SMS: Failed to parse phone number");
+        DEBUG_PRINTLN("READ SMS: Failed to parse phone number");
         return false;
     }
       
     // Waiting for actual SMS text
     if (!receiveAT(text, TRACKER_BUFFER_LARGE, TRACKER_DEFAULT_TIMEOUT)){
-        Serial.println("READ SMS: Failed to receive sms text");
+        DEBUG_PRINTLN("READ SMS: Failed to receive sms text");
         return false;
     }
 
     if (!waitFor("OK")){
-        Serial.println("READ SMS: Failed to receive OK");
+        DEBUG_PRINTLN("READ SMS: Failed to receive OK");
         return false;
     }
 

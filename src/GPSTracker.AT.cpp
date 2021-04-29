@@ -49,12 +49,12 @@ void GPSTracker::processAT(const char * ATCommand){
 
     switch (decodeAT(ATCommand)){
         case 0:
-            Serial.println("PROCESS AT: New SMS");
+            DEBUG_PRINTLN("PROCESS AT: New SMS");
             ATSMS(ATCommand);
             break;
         
         default:
-            Serial.println("PROCESS AT: No command");
+            DEBUG_PRINTLN("PROCESS AT: No command");
             break;
     }
 

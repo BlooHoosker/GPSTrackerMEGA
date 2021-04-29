@@ -11,27 +11,27 @@ bool GPSTracker::waitFor(const char *command, uint16_t timeout /*= TRACKER_DEFAU
 		if (length > 0){
 
 			/*
-			Serial.println("Reading in Wait");
+			DEBUG_PRINTLN("Reading in Wait");
 			
-			Serial.print("Length of read received bytes ");
-			Serial.println(length);
-			Serial.print(buffer);	
+			DEBUG_PRINT("Length of read received bytes ");
+			DEBUG_PRINTLN(length);
+			DEBUG_PRINT(buffer);	
 
 			
-			Serial.print("Length of command ");
-			Serial.println(strlen(command));
-			Serial.println(command);
+			DEBUG_PRINT("Length of command ");
+			DEBUG_PRINTLN(strlen(command));
+			DEBUG_PRINTLN(command);
 
 			
 			for (int i = 0; i < strlen(buffer); i++ ){
-				Serial.print((uint8_t)buffer[i]);
+				DEBUG_PRINT((uint8_t)buffer[i]);
 			}
-			Serial.println();
+			DEBUG_PRINTLN();
 
 			for (int i = 0; i < strlen(command); i++ ){
-				Serial.print((uint8_t)command[i]);
+				DEBUG_PRINT((uint8_t)command[i]);
 			}
-			Serial.println();
+			DEBUG_PRINTLN();
 			*/
 
 			if (compareAT(buffer, command)){
@@ -53,27 +53,27 @@ bool GPSTracker::waitFor(char * buffer, size_t bufferSize, uint16_t timeout, con
 		if (length > 0){
 			
 			/*
-			Serial.println("Reading in Wait");
+			DEBUG_PRINTLN("Reading in Wait");
 			
-			Serial.print("Length of read received bytes ");
-			Serial.println(length);
-			Serial.print(buffer);	
+			DEBUG_PRINT("Length of read received bytes ");
+			DEBUG_PRINTLN(length);
+			DEBUG_PRINT(buffer);	
 
 			
-			Serial.print("Length of command ");
-			Serial.println(strlen(command));
-			Serial.print(command);
+			DEBUG_PRINT("Length of command ");
+			DEBUG_PRINTLN(strlen(command));
+			DEBUG_PRINT(command);
 
 			
 			for (int i = 0; i < strlen(command); i++ ){
-				Serial.print((uint8_t)trackerBuffer[i]);
+				DEBUG_PRINT((uint8_t)trackerBuffer[i]);
 			}
-			Serial.println();
+			DEBUG_PRINTLN();
 
 			for (int i = 0; i < strlen(command); i++ ){
-				Serial.print((uint8_t)command[i]);
+				DEBUG_PRINT((uint8_t)command[i]);
 			}
-			Serial.println();
+			DEBUG_PRINTLN();
 			*/
 
 			if (compareAT(buffer, command)){
