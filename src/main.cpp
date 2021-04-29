@@ -18,6 +18,7 @@ void lowPowerConfig(){
   power_twi_disable();
   power_usart2_disable();
   power_usart3_disable();
+  USART0_DISABLE
 }
 
 void setup() {
@@ -91,7 +92,7 @@ void loop() {
   // Checking GSM status
   tracker.checkGSM();
 
-  tracker.printStatus();
+  PRINTSTATUS
   DEBUG_PRINTLN("=====================================================");
   DEBUG_PRINTLN();
 }

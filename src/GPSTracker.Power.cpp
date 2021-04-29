@@ -7,17 +7,18 @@ bool GPSTracker::powerOn(){
 	bool currentlyPowered = powered();
 	if (currentlyPowered == true) return true;
 
-    // Hold PWR PIN low for 1 second to power on module
+    // Hold PWR PIN high for 1 second to power on module
+	// Timings based on documentation
 	digitalWrite(_powerPin, LOW);
-	delay(1000);
+	delay(600); // setup delay
 	digitalWrite(_powerPin, HIGH);
-	delay(1000);
+	delay(1100);
 	digitalWrite(_powerPin, LOW);
+	delay(1900);
 
 	// Send "AT" and wait for "AT" response
 	// If "AT" response is received, the module is powered on
 	// 4 attempts in total
-	
 	for (uint8_t i = 4; i > 0; i--){
 		sendAT();
 		if ( powered() ) return true;
@@ -39,13 +40,16 @@ bool GPSTracker::powered(){
 	return true;
 }
 
-// TODO make own version or explain based on doc
 void GPSTracker::reset(){
+	// Based on documentation, modul can be reset by holding reset pin low
     digitalWrite(_resetPin, HIGH);
 	delay(10);
 	digitalWrite(_resetPin, LOW);
-	delay(200);
+	// Reset has to be held low for at least 105ms
+	delay(150);
 	digitalWrite(_resetPin, HIGH);
+	// After reset it takes about 2.6s to be active
+	delay(2600);
 }
 
 void GPSTracker::checkBatteryPercentage(){
@@ -73,7 +77,7 @@ uint8_t GPSTracker::getBatteryPercentage(){
 
 	voltage = (sum / 100) * (5.0 / 1023.0);
 
-	// todo map to 4.2-3.4
+	// Percentage between 4.2 - 3.0
 	batteryPercentage = (voltage - BATTERY_VMIN) * 100 / (BATTERY_VMAX - BATTERY_VMIN);
 
 	if (batteryPercentage > 100) {

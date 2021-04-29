@@ -2,30 +2,32 @@
 
 void GPSTracker::userGPSPower(const char * SMSGPSPower){
 
-    unsigned int status = 0;
+    unsigned int state = 0;
 
-    if(sscanf(SMSGPSPower, "GPS POWER: %u", &status) != 1){
+    // Parses requested GPS power state from text command
+    if(sscanf(SMSGPSPower, "GPS POWER: %u", &state) != 1){
         DEBUG_PRINTLN("USER POWER: Invalid command format");
         sendSMS("INVALID COMMAND FORMAT\nCOMMAND SHOULD BE: \"GPS 0/1\"", _phoneNumber);
         return;
     }
 
-    if (status != 0 && status != 1){
+    // Check if state is valid
+    if (state != 0 && state != 1){
         DEBUG_PRINTLN("USER POWER: Invalid command format2");
         sendSMS("INVALID COMMAND FORMAT\nCOMMAND SHOULD BE: \"GPS [0,1]\"", _phoneNumber);
         return;
     }
 
-    // TODO check if this works
-    if( !powerGPS(status) ) {
+    // Sets GPS power state
+    if( !powerGPS(state) ) {
         DEBUG_PRINTLN("USER POWER: GPS failed to power up");
         sendSMS("FAILED SET GPS POWER", _phoneNumber);
         return;
     };
 
     DEBUG_PRINTLN("USER POWER: Sending reply");
-    delay(1000);
-    if (status){
+    // Sends reply
+    if (_powerStatus){
         if (!sendSMS("GPS POWERED UP", _phoneNumber)){
             DEBUG_PRINTLN("USER POWER: Failed to send sms");
         }
@@ -48,6 +50,7 @@ void GPSTracker::userLocation(){
     memset(timeStamp, 0, TRACKER_BUFFER_SHORT);
     memset(position, 0, TRACKER_BUFFER_MEDIUM);
 
+    // Update internal GPS info variables
     if (!updateGPSStatusInfo()){
         sendSMS("ERROR UPDATING GPS INFO", _phoneNumber);
         return;
@@ -55,15 +58,15 @@ void GPSTracker::userLocation(){
 
     // Date and time
     if (strlen(_date) && strlen(_time)){
-        sprintf(timeStamp, "TIMESTAMP:\n %s %s UTC", _date, _time);
+        sprintf(timeStamp, "TIMESTAMP:\r\n%s %s UTC", _date, _time);
     } else {
-        sprintf(timeStamp, "TIMESTAMP:\n NO DATA");
+        sprintf(timeStamp, "TIMESTAMP:\r\nNO DATA");
     }
 
     // Link and position coordinates
     if (strlen(_latitude) && strlen(_longitude)){
 
-        sprintf(position, "POSITION:\n %s, %s",_latitude, _longitude);
+        sprintf(position, "POSITION:\r\n%s, %s",_latitude, _longitude);
 
         if (_mapLinkSrc == 0){
             sprintf(link, "LOCATION:\r\nhttp://maps.google.com/maps?q=%s,%s",_latitude, _longitude);
@@ -75,9 +78,11 @@ void GPSTracker::userLocation(){
         strcpy(link, "LOCATION: NO DATA");
     }
 
+    // Creates final text message 
     sprintf(text, "%s\r\n%s\r\n%s", timeStamp, position, link);
 
     DEBUG_PRINTLN("USER LOCATION: Sending location data");
+    // Sends reply
     if(!sendSMS(text, _phoneNumber)){
         DEBUG_PRINTLN("USER LOCATION: failed to send");
     }
@@ -95,13 +100,11 @@ void GPSTracker::userStatus(){
     char link[TRACKER_BUFFER_SHORT];
     char battery[TRACKER_BUFFER_SHORT];
 
-
     memset(master, 0, TRACKER_BUFFER_SHORT); 
     memset(power, 0, TRACKER_BUFFER_SHORT);
     memset(fix, 0, TRACKER_BUFFER_SHORT);
     memset(link, 0, TRACKER_BUFFER_SHORT);
     memset(battery, 0, TRACKER_BUFFER_SHORT);
-
 
     // Updating internal status variables
     if (!updateStatus()){

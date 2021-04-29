@@ -41,41 +41,49 @@ bool GPSTracker::updateGPSStatusInfo(){
     _powerStatus = 0;   
     _fixStatus = 0;
 
+    // Getting GPS info sequence
     if (!getGPSInfo(buffer, TRACKER_BUFFER_LARGE)){
         DEBUG_PRINTLN("UPDATE: Failed to get info");
         return false;
     }
 
+    // Parsing GPS power status
     powerStatus = parseGPSPowerStatus(buffer);
     if (powerStatus == -1) {
         DEBUG_PRINTLN("UPDATE: Failed to parse power status");
         return false;        
     } 
 
+    // If GPS is disabled, returns
     _powerStatus = powerStatus;
     if (!powerStatus){
         return true;
     }
 
+    // Parsing GPS fix status
     fixStatus = parseGPSFixStatus(buffer);
     if (fixStatus == -1){
         DEBUG_PRINTLN("UPDATE: Failed to parse fix status");
         return false;           
     }
 
+    // If GPS doesn't have fix, returns
     _fixStatus = fixStatus;
     if (!fixStatus) return true;
 
+    // Parsing GPS position coordinates
     if (!parseGPSPosition(buffer, latitude, longitude, TRACKER_BUFFER_SHORT)){
         DEBUG_PRINTLN("UPDATE: Failed to parse position");
         return false;
     }
 
+    // Parsing time and date
     if(!parseTimeAndDate(buffer, date, TRACKER_BUFFER_DATE, time, TRACKER_BUFFER_TIME)){
         DEBUG_PRINTLN("UPDATE: Failed to parse time and date");
         return false;
     }
     
+    // Copy string to class arrays.
     strncpy(_date, date, TRACKER_BUFFER_DATE);
     strncpy(_time, time, TRACKER_BUFFER_TIME);
     strcpy(_latitude, latitude);
@@ -296,6 +304,7 @@ bool GPSTracker::parseTimeAndDate(const char * CGNSINF, char * date, uint8_t dat
         }
     }
 
+    // Creating time and date string
     // 20210218 230 1 0 8
     // 01234567 8910111213
     date[0] = timeStampText[0];

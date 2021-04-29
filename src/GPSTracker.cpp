@@ -139,9 +139,9 @@ bool GPSTracker::init(){
 	// Delete all stored SMS in module
 
 	bool received = false;
+
 	// Reset the module to start clean initialization
 	reset();
-	delay(1000);
 
 	// Load master number from EEPROM
 	getMasterNumber();
@@ -217,6 +217,7 @@ void GPSTracker::checkButton(){
 
 	DEBUG_PRINTLN("BUTTON: Check");
 
+	// 3 samples of button pin
 	uint8_t sample_1 = digitalRead(_buttonPin);
 	delay(10);
 	uint8_t sample_2 = digitalRead(_buttonPin);
@@ -238,7 +239,7 @@ void GPSTracker::checkButton(){
 	sample_3 = digitalRead(_buttonPin);
 	delay(10);
 
-
+	// If button is held for 3s resets device to factory settings
 	if (sample_1 == 0 && sample_1 == sample_2 && sample_2 == sample_3){
 		resetEEPROM();
 		wdt_enable(WDTO_120MS);
@@ -248,15 +249,16 @@ void GPSTracker::checkButton(){
 
 void GPSTracker::checkGSM(){
 
-	sendAT();
-
 	DEBUG_PRINTLN("GSM: Check");
 
+	// Sends AT and waits for answer
+	sendAT();
 	if(waitFor("OK")){
 		return;
 	}
 
 	DEBUG_PRINTLN("GSM: Restart");
+	// If GSM doesn't respond, Arduino restarts it
 	reset();
 	delay(500);
 	if (powerOn()){

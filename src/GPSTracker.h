@@ -3,11 +3,17 @@
 #include <Arduino.h>
 #include <Stream.h>
 
-// #define DEBUG_PRINTLN(s) Serial.println(s);
-// #define DEBUG_PRINT(s) Serial.print(s);
-#ifndef DEBUG_PRINTLN
+//#define DEBUG
+#ifdef DEBUG
+    #define DEBUG_PRINTLN(s) Serial.println(s);
+    #define DEBUG_PRINT(s) Serial.print(s);
+    #define USART0_DISABLE
+    #define PRINTSTATUS tracker.printStatus();
+#else
     #define DEBUG_PRINTLN(s)
     #define DEBUG_PRINT(s)
+    #define USART0_DISABLE   power_usart0_disable();
+    #define PRINTSTATUS 
 #endif
 
 #define TRACKER_BUFFER_LARGE 200
@@ -63,13 +69,13 @@ public:
 
     void builtInLedFastBlink();
 
-    void gsmSleep();
+    // void gsmSleep();
 
-    void gsmWake();
+    // void gsmWake();
 
-    bool enableGsmSleepMode();
+    // bool enableGsmSleepMode();
 
-    bool disableGsmSleepMode();
+    // bool disableGsmSleepMode();
 
 private:
 
