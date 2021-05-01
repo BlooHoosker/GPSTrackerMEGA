@@ -69,6 +69,8 @@ public:
 
     void builtInLedFastBlink();
 
+    void updateGPSLocation();
+
     // void gsmSleep();
 
     // void gsmWake();
@@ -94,8 +96,8 @@ private:
     char _date[TRACKER_BUFFER_DATE];
     char _time[TRACKER_BUFFER_TIME];
 
-    uint8_t _powerStatus;
-    uint8_t _fixStatus;
+    uint8_t _gpsPowerStatus;
+    uint8_t _gpsFixStatus;
     uint8_t _masterNumberSet;
     uint8_t _mapLinkSrc;
 

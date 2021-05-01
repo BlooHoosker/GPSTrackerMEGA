@@ -27,7 +27,7 @@ void GPSTracker::userGPSPower(const char * SMSGPSPower){
 
     DEBUG_PRINTLN("USER POWER: Sending reply");
     // Sends reply
-    if (_powerStatus){
+    if (_gpsPowerStatus){
         if (!sendSMS("GPS POWERED UP", _phoneNumber)){
             DEBUG_PRINTLN("USER POWER: Failed to send sms");
         }
@@ -113,14 +113,14 @@ void GPSTracker::userStatus(){
     }
 
     // GPS power status
-    if (_powerStatus){
+    if (_gpsPowerStatus){
         strcpy(power, "GPS POWER: ON");
     } else {
         strcpy(power, "GPS POWER: OFF");
     }
 
     // GPS Fix status
-    if (_fixStatus){
+    if (_gpsFixStatus){
         strcpy(fix, "GPS FIX: FIX AQUIRED");
     } else {
         strcpy(fix, "GPS FIX: NO FIX"); 

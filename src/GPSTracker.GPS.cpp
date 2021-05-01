@@ -11,7 +11,7 @@ bool GPSTracker::powerGPS(bool on){
         delay(2*TRACKER_SECOND);
         if (getGPSPowerStatus() != 1) return false;
         
-        _powerStatus = 1;
+        _gpsPowerStatus = 1;
     } else {
         // Powering down GPS
         sendAT("+CGNSPWR=0");
@@ -21,7 +21,7 @@ bool GPSTracker::powerGPS(bool on){
         delay(2*TRACKER_SECOND);
         if (getGPSPowerStatus() != 0) return false; 
 
-        _powerStatus = 0;
+        _gpsPowerStatus = 0;
     }
 
     return true;
@@ -38,8 +38,8 @@ bool GPSTracker::updateGPSStatusInfo(){
     int8_t powerStatus = 0;
     int8_t fixStatus = 0;
 
-    _powerStatus = 0;   
-    _fixStatus = 0;
+    _gpsPowerStatus = 0;   
+    _gpsFixStatus = 0;
 
     // Getting GPS info sequence
     if (!getGPSInfo(buffer, TRACKER_BUFFER_LARGE)){
@@ -55,7 +55,7 @@ bool GPSTracker::updateGPSStatusInfo(){
     } 
 
     // If GPS is disabled, returns
-    _powerStatus = powerStatus;
+    _gpsPowerStatus = powerStatus;
     if (!powerStatus){
         return true;
     }
@@ -68,7 +68,7 @@ bool GPSTracker::updateGPSStatusInfo(){
     }
 
     // If GPS doesn't have fix, returns
-    _fixStatus = fixStatus;
+    _gpsFixStatus = fixStatus;
     if (!fixStatus) return true;
 
     // Parsing GPS position coordinates

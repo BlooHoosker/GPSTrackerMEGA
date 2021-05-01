@@ -10,6 +10,6 @@
 
 #define BATTERY_VPIN A5
 #define BATTERY_VMAX 4.2 ///< Max voltage of battery at full charge
-#define BATTERY_VMIN 3.0 ///< Min voltage of battery at 0 %
+#define BATTERY_VMIN 3.2 ///< Min voltage of battery at 0 %
 
 #define SIM808_BAUDRATE 4800    ///< Control the baudrate use to communicate with the SIM808 module

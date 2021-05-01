@@ -31,8 +31,8 @@ GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN,/* uint8_t SIM
 	memset(_date, 0, TRACKER_BUFFER_DATE);
 	memset(_time, 0, TRACKER_BUFFER_TIME);
 
-	_powerStatus = 0;
-	_fixStatus = 0;
+	_gpsPowerStatus = 0;
+	_gpsFixStatus = 0;
 	_masterNumberSet = 0;
 	_mapLinkSrc = 0;
 	_batteryPercentage = 0;
@@ -56,9 +56,9 @@ void GPSTracker::printStatus(){
 	DEBUG_PRINT(" ");
 	DEBUG_PRINTLN(_time);
 	DEBUG_PRINT("Power status: ");
-	DEBUG_PRINTLN(_powerStatus);
+	DEBUG_PRINTLN(_gpsPowerStatus);
 	DEBUG_PRINT("Fix status: ");
-	DEBUG_PRINTLN(_fixStatus);
+	DEBUG_PRINTLN(_gpsFixStatus);
 	DEBUG_PRINT("Master set: ");
 	DEBUG_PRINTLN(_masterNumberSet);
 	DEBUG_PRINT("Link source: ");
@@ -263,10 +263,18 @@ void GPSTracker::checkGSM(){
 	delay(500);
 	if (powerOn()){
 		if (init()){
-			if (_powerStatus){
+			if (_gpsPowerStatus){
 				powerGPS(true);
 			}
 		}
 	}
 
 }
+
+void GPSTracker::updateGPSLocation(){
+	if (_gpsPowerStatus){
+		updateGPSStatusInfo();
+	}
+}
+
+

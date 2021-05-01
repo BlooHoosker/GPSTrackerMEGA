@@ -109,7 +109,7 @@ uint8_t GPSTracker::getBatteryPercentage(){
 
 // void GPSTracker::gsmSleep(){
 // 	// If GPS is off, GSM can go into sleep mode
-// 	if (!_powerStatus){
+// 	if (!_gpsPowerStatus){
 // 		digitalWrite(_dtrPin, HIGH);
 // 	}
 // }

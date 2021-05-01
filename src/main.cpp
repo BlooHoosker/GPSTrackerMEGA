@@ -86,6 +86,9 @@ void loop() {
   // Receiving any data available on serial link
   tracker.receive();
 
+  // Update GPS location if GPS is active
+  tracker.updateGPSLocation();
+
   // Checking battery percentage
   tracker.checkBatteryPercentage();
 
