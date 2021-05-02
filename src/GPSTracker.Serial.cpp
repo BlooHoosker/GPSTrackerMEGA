@@ -10,32 +10,14 @@ bool GPSTracker::waitFor(const char *command, uint16_t timeout /*= TRACKER_DEFAU
 		length = readAT(buffer, TRACKER_BUFFER_LARGE, &timeout);
 		if (length > 0){
 
-			/*
-			DEBUG_PRINTLN("Reading in Wait");
-			
-			DEBUG_PRINT("Length of read received bytes ");
-			DEBUG_PRINTLN(length);
-			DEBUG_PRINT(buffer);	
-
-			
-			DEBUG_PRINT("Length of command ");
-			DEBUG_PRINTLN(strlen(command));
-			DEBUG_PRINTLN(command);
-
-			
-			for (int i = 0; i < strlen(buffer); i++ ){
-				DEBUG_PRINT((uint8_t)buffer[i]);
-			}
-			DEBUG_PRINTLN();
-
-			for (int i = 0; i < strlen(command); i++ ){
-				DEBUG_PRINT((uint8_t)command[i]);
-			}
-			DEBUG_PRINTLN();
-			*/
-
+			// Compare received AT command with what is requested
 			if (compareAT(buffer, command)){
 				return true;
+			}
+
+			// Check if received AT is CMTI indicating new message
+			if (decodeAT(buffer) == 0){
+				queueInsert(buffer);
 			}
 		}
 	} while (timeout > 0);
@@ -52,32 +34,14 @@ bool GPSTracker::waitFor(char * buffer, size_t bufferSize, uint16_t timeout, con
 		length = readAT(buffer, bufferSize, &timeout);
 		if (length > 0){
 			
-			/*
-			DEBUG_PRINTLN("Reading in Wait");
-			
-			DEBUG_PRINT("Length of read received bytes ");
-			DEBUG_PRINTLN(length);
-			DEBUG_PRINT(buffer);	
-
-			
-			DEBUG_PRINT("Length of command ");
-			DEBUG_PRINTLN(strlen(command));
-			DEBUG_PRINT(command);
-
-			
-			for (int i = 0; i < strlen(command); i++ ){
-				DEBUG_PRINT((uint8_t)trackerBuffer[i]);
-			}
-			DEBUG_PRINTLN();
-
-			for (int i = 0; i < strlen(command); i++ ){
-				DEBUG_PRINT((uint8_t)command[i]);
-			}
-			DEBUG_PRINTLN();
-			*/
-
+			// Compare received AT command with what is requested
 			if (compareAT(buffer, command)){
 				return true;
+			}
+
+			// Check if received AT is CMTI indicating new message
+			if (decodeAT(buffer) == 0){
+				queueInsert(buffer);
 			}
 		}
 	} while (timeout > 0);

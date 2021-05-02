@@ -28,6 +28,21 @@ bool GPSTracker::deleteAllSMS(){
     return true;
 }
 
+bool GPSTracker::deleteSMS(uint8_t index){
+
+    char command[TRACKER_BUFFER_SHORT];
+    memset(command, 0, TRACKER_BUFFER_SHORT);
+
+    sprintf(command, "+CMGD=%d", index);
+
+    sendAT(command);
+    if (!waitFor("OK", TRACKER_SECOND*5)){
+        return false;
+    }
+
+    return true;
+}
+
 int8_t GPSTracker::parseSMSIndex(const char * ATCMTI){
     int index = 0;
     // Parse index from CMTI command
@@ -129,8 +144,10 @@ void GPSTracker::ATSMS(const char * ATCMTI){
             break;
     }
 
-    // Deletes all SMS messages to keep free space
-    deleteAllSMS();
+    // Deletes SMS message from storage to keep free space
+    if (!deleteSMS(index)){
+        DEBUG_PRINTLN("ATSMS: Failed to delete SMS");
+    }
 }
 
 void GPSTracker::extractSMSText(char * SMSText){

@@ -203,7 +203,8 @@ bool GPSTracker::init(){
 
 void GPSTracker::receive(){
 	char receiveBuffer[TRACKER_BUFFER_SHORT];
-	if (receiveAT(receiveBuffer, TRACKER_BUFFER_SHORT, 100)){
+
+	if (waitFor(receiveBuffer, TRACKER_BUFFER_SHORT, 100, "+CMTI")){
 		//tracker.gsmWake();
 		DEBUG_PRINT(receiveBuffer);
 		builtInLedOn();
@@ -211,6 +212,24 @@ void GPSTracker::receive(){
 		builtInLedOff();
 		//tracker.gsmSleep();
   	}
+
+	while(queueExtract(receiveBuffer, TRACKER_BUFFER_SHORT)){
+		//tracker.gsmWake();
+		DEBUG_PRINT(receiveBuffer);
+		builtInLedOn();
+		processAT(receiveBuffer);  
+		builtInLedOff();
+		//tracker.gsmSleep();
+	}
+
+	// if (receiveAT(receiveBuffer, TRACKER_BUFFER_SHORT, 100)){
+	// 	//tracker.gsmWake();
+	// 	DEBUG_PRINT(receiveBuffer);
+	// 	builtInLedOn();
+	// 	processAT(receiveBuffer);  
+	// 	builtInLedOff();
+	// 	//tracker.gsmSleep();
+  	// }
 }
 
 void GPSTracker::checkButton(){
@@ -263,7 +282,8 @@ void GPSTracker::checkGSM(){
 	delay(500);
 	if (powerOn()){
 		if (init()){
-			if (_gpsPowerStatus){
+			// Enables GPS if it was enabled before
+			if (_gpsPowerStatus == 1){
 				powerGPS(true);
 			}
 		}
@@ -272,7 +292,7 @@ void GPSTracker::checkGSM(){
 }
 
 void GPSTracker::updateGPSLocation(){
-	if (_gpsPowerStatus){
+	if (_gpsPowerStatus == 1){
 		updateGPSStatusInfo();
 	}
 }

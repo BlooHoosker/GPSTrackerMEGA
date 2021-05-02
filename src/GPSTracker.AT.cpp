@@ -25,8 +25,7 @@ uint16_t GPSTracker::receiveAT(char * buffer, size_t size, uint16_t timeout){
 
 int8_t GPSTracker::decodeAT(const char * ATCommand){
 
-    char incomingSMS[] = "+CMTI";
-    if (compareAT(ATCommand, incomingSMS)){
+    if (compareAT(ATCommand, "+CMTI")){
         return 0;
     }
 

@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <Stream.h>
 
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
     #define DEBUG_PRINTLN(s) Serial.println(s);
     #define DEBUG_PRINT(s) Serial.print(s);
@@ -19,6 +19,8 @@
 #define TRACKER_BUFFER_LARGE 200
 #define TRACKER_BUFFER_MEDIUM 64
 #define TRACKER_BUFFER_SHORT 32
+
+#define TRACKER_QUEUE_SIZE 4
 
 #define TRACKER_BUFFER_DATE 15
 #define TRACKER_BUFFER_TIME 15
@@ -96,6 +98,11 @@ private:
     char _date[TRACKER_BUFFER_DATE];
     char _time[TRACKER_BUFFER_TIME];
 
+    char _commandQueue[TRACKER_QUEUE_SIZE][TRACKER_BUFFER_SHORT];
+    uint8_t _queueCommandNum;
+    uint8_t _queueHead;
+    uint8_t _queueTail;
+
     uint8_t _gpsPowerStatus;
     uint8_t _gpsFixStatus;
     uint8_t _masterNumberSet;
@@ -104,6 +111,9 @@ private:
     uint8_t _batteryPercentage;
     bool _batteryWarningSent;
 
+    void queueInsert(const char * CMTI);
+
+    bool queueExtract(char * CMTI, uint8_t CMTIBufferSize);
 
     void resetEEPROM();
 
@@ -266,6 +276,9 @@ private:
 
     // Deletes all SMS messages stored in module's storage
     bool deleteAllSMS();
+
+    // Deletes SMS message stored in module's storage at index
+    bool deleteSMS(uint8_t index);
 
     /*
     * Support method for sending SMS
