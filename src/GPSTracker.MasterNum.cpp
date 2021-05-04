@@ -73,6 +73,7 @@ void GPSTracker::getMasterNumber(){
     // Check if crc matches
     if(crc != EEPROM[CRC_ADDR]){
         DEBUG_PRINTLN("MASTER: CRC don't match");
+        //todo send sms
         memset(_phoneNumber, 0, TRACKER_BUFFER_SHORT);
     } else {
         DEBUG_PRINT("MASTER: ");

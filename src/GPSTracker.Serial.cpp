@@ -49,7 +49,7 @@ bool GPSTracker::waitFor(char * buffer, size_t bufferSize, uint16_t timeout, con
 	return false;
 }
 
-size_t GPSTracker::readAT(char * buffer, size_t size, uint16_t * timeout)
+uint16_t GPSTracker::readAT(char * buffer, size_t size, uint16_t * timeout)
 {
 	uint16_t i = 0;
 	bool cr = false;

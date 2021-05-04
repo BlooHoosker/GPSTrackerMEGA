@@ -243,8 +243,8 @@ bool GPSTracker::waitForPromt(uint16_t timeout){
 
 bool GPSTracker::readSMS(uint8_t smsIndex, char * text, char * phoneNumber, size_t textSize, size_t phoneNumSize){
 
-    memset(text, 0, TRACKER_BUFFER_LARGE);
-    memset(phoneNumber, 0, TRACKER_BUFFER_SHORT);
+    memset(text, 0, textSize);
+    memset(phoneNumber, 0, phoneNumSize);
 
     if (sprintf(text, "+CMGR=%d", smsIndex) <= 0){
         return false;
@@ -254,19 +254,19 @@ bool GPSTracker::readSMS(uint8_t smsIndex, char * text, char * phoneNumber, size
     sendAT(text);
 
     // Wait for CMGR reply
-    if (!waitFor(text, TRACKER_BUFFER_LARGE, 5*TRACKER_SECOND, "+CMGR")){
+    if (!waitFor(text, textSize, 5*TRACKER_SECOND, "+CMGR")){
         DEBUG_PRINTLN("READ SMS: Failed to receive SMS AT sequence");
         return false;
     }
 
     // Parsing phone number from CMGR
-    if (!parseSMSPhoneNumber(text, phoneNumber, TRACKER_BUFFER_SHORT)){
+    if (!parseSMSPhoneNumber(text, phoneNumber, phoneNumSize)){
         DEBUG_PRINTLN("READ SMS: Failed to parse phone number");
         return false;
     }
       
     // Waiting for actual SMS text
-    if (!receiveAT(text, TRACKER_BUFFER_LARGE, TRACKER_DEFAULT_TIMEOUT)){
+    if (!receiveAT(text, textSize, TRACKER_DEFAULT_TIMEOUT)){
         DEBUG_PRINTLN("READ SMS: Failed to receive sms text");
         return false;
     }
