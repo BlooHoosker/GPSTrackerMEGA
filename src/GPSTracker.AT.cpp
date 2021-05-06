@@ -1,6 +1,8 @@
 #include <GPSTracker.h>
 
 void GPSTracker::sendAT(const char * AT /* = "" */){
+    wdt_reset();
+
     char buffer[TRACKER_BUFFER_MEDIUM];
     memset(buffer, 0, TRACKER_BUFFER_MEDIUM);
 
@@ -9,7 +11,7 @@ void GPSTracker::sendAT(const char * AT /* = "" */){
 }
 
 uint16_t GPSTracker::receiveAT(char * buffer, size_t size, uint16_t timeout){
-    
+    wdt_reset();
     uint16_t length = 0;
 
     // Waits until more than 2 characters are received. 
@@ -24,7 +26,7 @@ uint16_t GPSTracker::receiveAT(char * buffer, size_t size, uint16_t timeout){
 }
 
 int8_t GPSTracker::decodeAT(const char * ATCommand){
-
+    wdt_reset();
     if (compareAT(ATCommand, "+CMTI")){
         return 0;
     }
@@ -33,6 +35,7 @@ int8_t GPSTracker::decodeAT(const char * ATCommand){
 }
 
 bool  GPSTracker::compareAT(const char * receivedAT, const char * expectedAT){
+    wdt_reset();
 
     // if received AT command is longer than expected we can safely compare
     if (strlen(receivedAT) >= strlen(expectedAT)){
@@ -45,7 +48,8 @@ bool  GPSTracker::compareAT(const char * receivedAT, const char * expectedAT){
 }
 
 void GPSTracker::processAT(const char * ATCommand){
-
+    wdt_reset();
+    
     switch (decodeAT(ATCommand)){
         case 0:
             DEBUG_PRINTLN("PROCESS AT: New SMS");

@@ -6,6 +6,7 @@ bool GPSTracker::waitFor(const char *command, uint16_t timeout /*= TRACKER_DEFAU
 	uint8_t length = 0;
 
 	do {
+		wdt_reset();
 		memset(buffer, 0, TRACKER_BUFFER_LARGE);
 		length = readAT(buffer, TRACKER_BUFFER_LARGE, &timeout);
 		if (length > 0){
@@ -30,6 +31,7 @@ bool GPSTracker::waitFor(char * buffer, size_t bufferSize, uint16_t timeout, con
 	uint8_t length = 0;
 
 	do {
+		wdt_reset();
 		memset(buffer, 0, bufferSize);
 		length = readAT(buffer, bufferSize, &timeout);
 		if (length > 0){
@@ -51,6 +53,8 @@ bool GPSTracker::waitFor(char * buffer, size_t bufferSize, uint16_t timeout, con
 
 uint16_t GPSTracker::readAT(char * buffer, size_t size, uint16_t * timeout)
 {
+	wdt_reset();
+
 	uint16_t i = 0;
 	bool cr = false;
 	bool nl = false;
@@ -91,6 +95,7 @@ uint16_t GPSTracker::readAT(char * buffer, size_t size, uint16_t * timeout)
 
 		if (*timeout){
 			(*timeout)--;
+			wdt_reset();
 			delay(1);
 		} else {
 			return 0;
@@ -108,7 +113,7 @@ uint16_t GPSTracker::readAT(char * buffer, size_t size, uint16_t * timeout)
 }
 
 bool GPSTracker::setEchoMode(bool echo){
-
+	wdt_reset();
 	if(echo){
 		sendAT("E1");
 	} else {

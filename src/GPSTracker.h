@@ -2,8 +2,9 @@
 
 #include <Arduino.h>
 #include <Stream.h>
+#include <avr/wdt.h>
 
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
     #define DEBUG_PRINTLN(s) Serial.println(s);
     #define DEBUG_PRINT(s) Serial.print(s);
@@ -118,6 +119,7 @@ public:
     // bool disableGsmSleepMode();
 
 private:
+
     Stream *_serialPort;
     uint8_t _resetPin;
     uint8_t _powerPin;
@@ -420,6 +422,7 @@ private:
      */
     bool waitForPromt(uint16_t timeout);
 
+
     // ============================================================================
     // User commands operations
     // ============================================================================
@@ -464,15 +467,10 @@ private:
      */
     void userSetMapLinkSrc(const uint8_t linkSel);
 
+
     // ============================================================================
     // Master number operations
     // ============================================================================
-
-    /*
-    * Sets master phone number for the device
-    * Stores it in EEPROM and sets master number flag in EEPROM
-    * phoneNumber: phone number to be set as master
-    */
 
     /**
      * @brief Sets master phone number for the device. Stores it in EEPROM and sets master number flag in EEPROM.
@@ -590,7 +588,6 @@ private:
      * @return false on wrong format.
      */
     bool parseGPSPosition(const char *CGNSINF, char *latitude, char *longitude, size_t bufferSize);
-
     
     /**
      * @brief Parses GPS fix status from GNSS (CGNSINF) sequence.
@@ -615,6 +612,7 @@ private:
      */
     bool parseTimeAndDate(const char *CGNSINF, char *date, uint8_t dateSize, char *time, uint8_t timeSize);
 
+
     // ============================================================================
     // Location map link operations
     // ============================================================================
@@ -632,6 +630,7 @@ private:
      */
     void getMapLinkSrc();
 
+
     // ============================================================================
     // Battery status reading
     // ============================================================================
@@ -642,6 +641,7 @@ private:
      * @return battery percentage.
      */
     uint8_t getBatteryPercentage();
+
 
     // ============================================================================
     // SMS Queue buffer operations

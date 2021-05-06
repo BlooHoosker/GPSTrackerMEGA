@@ -14,6 +14,7 @@ void interruptRoutine(){}
 
 // Disabling SPI, TWI, USART2, USART3 because they are not used
 void lowPowerConfig(){
+  wdt_reset();
   power_spi_disable();
   power_twi_disable();
   power_usart2_disable();
@@ -23,11 +24,10 @@ void lowPowerConfig(){
 
 void setup() {
   Serial.begin(9600);
+  wdt_enable(WDTO_8S);
 
   // DEBUG_PRINTLN("Testing...");
   // tracker.test();
-
-  // Pinmode for built in LED
 
   DEBUG_PRINTLN("SETUP: Arduino config");
 
@@ -59,11 +59,32 @@ void setup() {
 }
 
 void loop() {
+  // Enable watchdog after sleep mode
+  wdt_enable(WDTO_8S);
 
   DEBUG_PRINTLN("Receiving...");
 
+  // Receiving any data available on serial link
+  tracker.receive();
+
+  // Update GPS location if GPS is active
+  tracker.updateGPSLocation();
+
+  // Checking battery percentage
+  tracker.checkBatteryPercentage();
+
+  // Checking GSM status
+  tracker.checkGSM();
+
+  PRINTSTATUS
+  DEBUG_PRINTLN("=====================================================");
+  DEBUG_PRINTLN();
+
+  // Disabling watchdog before sleep mode (sleep mode uses watchdog)
+  wdt_disable();
+
   // Entering idle sleep mode for 8 seconds, wakes up on UART communication
-  for (uint8_t i = 0; i < 4; i++){
+  for (uint8_t i = 0; i < 8; i++){
     LowPower.idle(SLEEP_8S, 
                   ADC_OFF, 
                   TIMER5_OFF, 
@@ -83,20 +104,5 @@ void loop() {
     tracker.checkButton();
   }
   
-  // Receiving any data available on serial link
-  tracker.receive();
-
-  // Update GPS location if GPS is active
-  tracker.updateGPSLocation();
-
-  // Checking battery percentage
-  tracker.checkBatteryPercentage();
-
-  // Checking GSM status
-  tracker.checkGSM();
-
-  PRINTSTATUS
-  DEBUG_PRINTLN("=====================================================");
-  DEBUG_PRINTLN();
 }
 

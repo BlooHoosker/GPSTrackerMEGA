@@ -1,6 +1,7 @@
 #include <GPSTracker.h>
 
 void GPSTracker::queueInsert(const char * CMTI){
+    wdt_reset();
 
     DEBUG_PRINTLN("QUEUE INSERT")
 
@@ -31,6 +32,7 @@ void GPSTracker::queueInsert(const char * CMTI){
 }
 
 bool GPSTracker::queueExtract(char * CMTI, uint8_t CMTIBufferSize){
+    wdt_reset();
 
     DEBUG_PRINTLN("QUEUE EXTRACT")
 

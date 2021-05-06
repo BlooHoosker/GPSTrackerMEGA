@@ -2,6 +2,7 @@
 #include <BoardConfig.h>
 
 bool GPSTracker::powerOn(){
+	wdt_reset();
 
 	// Check if module is already powered on
 	bool currentlyPowered = powered();
@@ -29,6 +30,8 @@ bool GPSTracker::powerOn(){
 }
 
 bool GPSTracker::powered(){
+	wdt_reset();
+
 	char buffer[TRACKER_BUFFER_SHORT];
 	
 	// Send AT and waiting for response
@@ -41,6 +44,8 @@ bool GPSTracker::powered(){
 }
 
 void GPSTracker::reset(){
+	wdt_reset();
+	
 	// Based on documentation, modul can be reset by holding reset pin low
     digitalWrite(_resetPin, HIGH);
 	delay(10);
@@ -53,12 +58,13 @@ void GPSTracker::reset(){
 }
 
 void GPSTracker::checkBatteryPercentage(){
+	wdt_reset();
 
 	_batteryPercentage = getBatteryPercentage();
 
 	if (_batteryPercentage < 20){
 		if (!_batteryWarningSent){
-			//sendSMS("LOCATOR BATTERY LESS THAN 20%", _phoneNumber);
+			sendSMS("LOCATOR BATTERY LESS THAN 20%", _phoneNumber);
 			_batteryWarningSent = true;
 		}
 	} else if (_batteryPercentage > 25){
@@ -67,6 +73,8 @@ void GPSTracker::checkBatteryPercentage(){
 }
 
 uint8_t GPSTracker::getBatteryPercentage(){
+	wdt_reset();
+
 	unsigned long sum = 0;
 	float voltage = 0;
 	uint8_t batteryPercentage;

@@ -41,11 +41,14 @@ GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN,/* uint8_t SIM
 GPSTracker::~GPSTracker(){}
 
 bool GPSTracker::updateStatus(){
+	wdt_reset();
 	_batteryPercentage = getBatteryPercentage();
 	return updateGPSStatusInfo();
 }
 
 void GPSTracker::printStatus(){
+	wdt_reset();
+
 	updateGPSStatusInfo();
 	DEBUG_PRINT("Latitude: ");
 	DEBUG_PRINTLN(_latitude);
@@ -68,12 +71,16 @@ void GPSTracker::printStatus(){
 }
 
 void GPSTracker::resetEEPROM(){
+	wdt_reset();
+
 	for (uint8_t i = 0; i < 6+TRACKER_BUFFER_SHORT; i++){
 		EEPROM.update(i, 0);
 	}
 }
 
 void GPSTracker::restart(){
+	wdt_reset();
+
 	// Check if master number is set
 	if (!_masterNumberSet){
 		// If its not set, save phone number to memory to send reply after restart
@@ -81,10 +88,13 @@ void GPSTracker::restart(){
 		resetMasterNumber();
 	}
 	EEPROM[RESTART_ADDR] = 0xFF;
+	delay(10);
 	wdt_enable(WDTO_120MS);
+	while(1);
 }
 
 bool GPSTracker::start(Stream &serial){
+	wdt_reset();
 
     _serialPort = &serial;
 
@@ -127,6 +137,7 @@ bool GPSTracker::start(Stream &serial){
 }
 
 bool GPSTracker::init(){
+	wdt_reset();
 
 	// Reset
 	// Delay
@@ -202,6 +213,8 @@ bool GPSTracker::init(){
 }
 
 void GPSTracker::receive(){
+	wdt_reset();
+
 	char receiveBuffer[TRACKER_BUFFER_SHORT];
 
 	if (waitFor(receiveBuffer, TRACKER_BUFFER_SHORT, 100, "+CMTI")){
@@ -233,6 +246,7 @@ void GPSTracker::receive(){
 }
 
 void GPSTracker::checkButton(){
+	//wdt_reset();
 
 	DEBUG_PRINTLN("BUTTON: Check");
 
@@ -267,6 +281,7 @@ void GPSTracker::checkButton(){
 }
 
 void GPSTracker::checkGSM(){
+	wdt_reset();
 
 	DEBUG_PRINTLN("GSM: Check");
 
@@ -292,6 +307,8 @@ void GPSTracker::checkGSM(){
 }
 
 void GPSTracker::updateGPSLocation(){
+	wdt_reset();
+
 	if (_gpsPowerStatus == 1){
 		updateGPSStatusInfo();
 	}

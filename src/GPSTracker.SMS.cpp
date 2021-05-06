@@ -1,6 +1,8 @@
 #include <GPSTracker.h>
 
 bool GPSTracker::setSMSMessageMode(bool text){
+    wdt_reset();
+
     if (text){
         sendAT("+CMGF=1");
     } else {
@@ -11,6 +13,8 @@ bool GPSTracker::setSMSMessageMode(bool text){
 }
 
 bool GPSTracker::setSmsStorage(){
+    wdt_reset();
+
     sendAT("+CPMS=\"ME\",\"ME\",\"ME\"");
 	if(!waitFor("OK")){
 		return false;
@@ -19,6 +23,7 @@ bool GPSTracker::setSmsStorage(){
 }
 
 bool GPSTracker::deleteAllSMS(){
+    wdt_reset();
 
     sendAT("+CMGDA=\"DEL ALL\"");
     if (!waitFor("OK", TRACKER_SECOND*25)){
@@ -29,6 +34,7 @@ bool GPSTracker::deleteAllSMS(){
 }
 
 bool GPSTracker::deleteSMS(uint8_t index){
+    wdt_reset();
 
     char command[TRACKER_BUFFER_SHORT];
     memset(command, 0, TRACKER_BUFFER_SHORT);
@@ -44,6 +50,8 @@ bool GPSTracker::deleteSMS(uint8_t index){
 }
 
 int8_t GPSTracker::parseSMSIndex(const char * ATCMTI){
+    wdt_reset();
+
     int index = 0;
     // Parse index from CMTI command
     if( sscanf(ATCMTI, "+CMTI: \"ME\",%d\r\n", &index) != 1){
@@ -53,6 +61,7 @@ int8_t GPSTracker::parseSMSIndex(const char * ATCMTI){
 }
 
 int GPSTracker::decodeSMSText(const char *SMSTEXT){
+    wdt_reset();
 
     if (!strcmp(SMSTEXT, "LOCATION")) return 0;
 
@@ -74,6 +83,7 @@ int GPSTracker::decodeSMSText(const char *SMSTEXT){
 }
 
 void GPSTracker::ATSMS(const char * ATCMTI){
+    wdt_reset();
 
     char text[TRACKER_BUFFER_LARGE];
     char phoneNumber[TRACKER_BUFFER_SHORT];
@@ -151,6 +161,8 @@ void GPSTracker::ATSMS(const char * ATCMTI){
 }
 
 void GPSTracker::extractSMSText(char * SMSText){
+    wdt_reset();
+
     uint16_t length = strlen(SMSText);
     bool endOfText = false;
     for (uint16_t i = 0; i < length; i++){
@@ -160,6 +172,7 @@ void GPSTracker::extractSMSText(char * SMSText){
 }
 
 bool GPSTracker::sendSMS(const char * text, const char * phoneNumber){
+    wdt_reset();
 
     char buffer[TRACKER_BUFFER_LARGE];
 
@@ -216,6 +229,7 @@ bool GPSTracker::sendSMS(const char * text, const char * phoneNumber){
 }
 
 bool GPSTracker::waitForPromt(uint16_t timeout){
+    wdt_reset();
 
     bool dartChar = false;
     char c = 0;
@@ -242,6 +256,7 @@ bool GPSTracker::waitForPromt(uint16_t timeout){
 }
 
 bool GPSTracker::readSMS(uint8_t smsIndex, char * text, char * phoneNumber, size_t textSize, size_t phoneNumSize){
+    wdt_reset();
 
     memset(text, 0, textSize);
     memset(phoneNumber, 0, phoneNumSize);
@@ -283,7 +298,8 @@ bool GPSTracker::readSMS(uint8_t smsIndex, char * text, char * phoneNumber, size
 }
 
 bool GPSTracker::parseSMSPhoneNumber(const char * ATCMGR, char * numberBuffer, size_t numberBufferSize){
-
+    wdt_reset();
+    
     uint16_t commandLength = strlen(ATCMGR);
     char delimiters[] = ",\"\"";
 

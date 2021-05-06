@@ -1,6 +1,7 @@
 #include <GPSTracker.h>
 
 bool GPSTracker::powerGPS(bool on){
+    wdt_reset();
 
     if (on){
         // Powering up GPS
@@ -28,6 +29,7 @@ bool GPSTracker::powerGPS(bool on){
 }
 
 bool GPSTracker::updateGPSStatusInfo(){
+    wdt_reset();
 
     char buffer[TRACKER_BUFFER_LARGE];
     char latitude[TRACKER_BUFFER_SHORT];
@@ -93,6 +95,7 @@ bool GPSTracker::updateGPSStatusInfo(){
 
 //+CGNSINF: 1,1,20210218230108.000,50.468168,13.421028,385.700,3.39,209.6,1,,5.0,5.1,1.0,,9,3,,,27,,
 bool  GPSTracker::getGPSInfo(char * buffer, size_t bufferSize){
+    wdt_reset();
 
     // Send AT requesting GPS information sequence
     sendAT("+CGNSINF");
@@ -110,6 +113,7 @@ bool  GPSTracker::getGPSInfo(char * buffer, size_t bufferSize){
 }
 
 int8_t GPSTracker::getGPSPowerStatus(){
+    wdt_reset();
 
     char buffer[TRACKER_BUFFER_LARGE];
 
@@ -119,6 +123,7 @@ int8_t GPSTracker::getGPSPowerStatus(){
 }
 
 bool GPSTracker::getGPSPosition(char * latitude, char * longitude, size_t bufferSize){
+    wdt_reset();
 
     char buffer[TRACKER_BUFFER_LARGE];
 
@@ -145,6 +150,7 @@ bool GPSTracker::getGPSPosition(char * latitude, char * longitude, size_t buffer
 }
 
 int8_t GPSTracker::getGPSFixStatus(){
+    wdt_reset();
 
     char buffer[TRACKER_BUFFER_LARGE];
 
@@ -160,6 +166,7 @@ int8_t GPSTracker::getGPSFixStatus(){
 }
 
 bool GPSTracker::parseGPSValue(const char * CGNSINF, uint8_t valuePosition, char * value, uint8_t valueSize){
+    wdt_reset();
 
     uint8_t length = strlen(CGNSINF);
     const char prefix[] = "+CGNSINF: ";
@@ -223,6 +230,7 @@ bool GPSTracker::parseGPSValue(const char * CGNSINF, uint8_t valuePosition, char
 }
 
 bool GPSTracker::parseGPSPosition(const char * CGNSINF, char * latitude, char * longitude, size_t bufferSize){
+    wdt_reset();
 
     if (!parseGPSValue(CGNSINF, 3, latitude, bufferSize)){
         DEBUG_PRINTLN("GPS POSITION: Failed to parse latitude");
@@ -238,6 +246,7 @@ bool GPSTracker::parseGPSPosition(const char * CGNSINF, char * latitude, char * 
 }
 
 int8_t  GPSTracker::parseGPSFixStatus(const char * CGNSINF){
+    wdt_reset();
 
     char status[2] = "\0";
 
@@ -258,6 +267,7 @@ int8_t  GPSTracker::parseGPSFixStatus(const char * CGNSINF){
 }
 
 int8_t GPSTracker::parseGPSPowerStatus(const char * CGNSINF){
+    wdt_reset();
 
     char status[2] = "\0";
 
@@ -279,6 +289,7 @@ int8_t GPSTracker::parseGPSPowerStatus(const char * CGNSINF){
 
 // 2021-02-18 (10 chars) 23:01:08 (8 chars)
 bool GPSTracker::parseTimeAndDate(const char * CGNSINF, char * date, uint8_t dateSize, char * time, uint8_t timeSize){
+    wdt_reset();
     
     //+CGNSINF: 1,1,20210218230108.000,50.468168,13.421028,385.700,3.39,209.6,1,,5.0,5.1,1.0,,9,3,,,27,,
     char timeStampText[TRACKER_BUFFER_SHORT];

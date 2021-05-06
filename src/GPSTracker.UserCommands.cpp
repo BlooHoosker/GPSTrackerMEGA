@@ -1,6 +1,7 @@
 #include <GPSTracker.h>
 
 void GPSTracker::userGPSPower(const char * SMSGPSPower){
+    wdt_reset();
 
     unsigned int state = 0;
 
@@ -39,6 +40,7 @@ void GPSTracker::userGPSPower(const char * SMSGPSPower){
 }
 
 void GPSTracker::userLocation(){
+    wdt_reset();
 
     char text[TRACKER_BUFFER_LARGE];
     char link[TRACKER_BUFFER_LARGE];
@@ -90,6 +92,7 @@ void GPSTracker::userLocation(){
 }
 
 void GPSTracker::userStatus(){
+    wdt_reset();
 
     char text[TRACKER_BUFFER_LARGE];
     memset(text, 0, TRACKER_BUFFER_LARGE);
@@ -152,6 +155,8 @@ void GPSTracker::userStatus(){
 }
 
 void GPSTracker::userSetMasterNumber(const char * phoneNumber){
+    wdt_reset();
+
     if (setMasterNumber(phoneNumber)){
         DEBUG_PRINTLN("USER MASTER SET: Sending reply");
         sendSMS("MASTER NUMBER SET", _phoneNumber);
@@ -162,13 +167,16 @@ void GPSTracker::userSetMasterNumber(const char * phoneNumber){
 }
 
 void GPSTracker::userResetMasterNumber(){
+    wdt_reset();
+
     resetMasterNumber();
     DEBUG_PRINTLN("USER MASTER RESET: Sending reply");
     sendSMS("MASTER NUMBER RESET", _phoneNumber);
 }
 
 void GPSTracker::userSetMapLinkSrc(const uint8_t linkSel){
-
+    wdt_reset();
+    
     if (linkSel != 0 && linkSel != 1) return;
 
     setMapLinkSrc(linkSel);

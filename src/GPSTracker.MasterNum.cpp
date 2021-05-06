@@ -2,6 +2,7 @@
 #include <EEPROM.h>
 
 char calculateCRC(const char* buffer){
+    wdt_reset();
     char result = 0;
     uint8_t length = strlen(buffer);
 
@@ -13,7 +14,8 @@ char calculateCRC(const char* buffer){
 }
 
 bool GPSTracker::setMasterNumber(const char * phoneNumber){
-
+    wdt_reset();
+    
     uint8_t length = strlen(phoneNumber);
     char crc = 0;
 
@@ -44,6 +46,7 @@ bool GPSTracker::setMasterNumber(const char * phoneNumber){
 }
 
 void GPSTracker::getMasterNumber(){
+    wdt_reset();
 
     char crc = 0;
     uint8_t length = 0;

@@ -1,6 +1,12 @@
 #include <GPSTracker.h>
 
 void GPSTracker::test(){
+
+	wdt_enable(WDTO_2S);
+	wdt_reset();
+	wdt_enable(WDTO_8S);
+	while(1);
+
 	// char buffer[TRACKER_BUFFER_LARGE];
 	// memset(buffer, 0, TRACKER_BUFFER_LARGE);
 
