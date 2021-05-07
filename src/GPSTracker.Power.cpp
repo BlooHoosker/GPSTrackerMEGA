@@ -17,6 +17,8 @@ bool GPSTracker::powerOn(){
 	digitalWrite(_powerPin, LOW);
 	delay(1900);
 
+	wdt_reset();
+	
 	// Send "AT" and wait for "AT" response
 	// If "AT" response is received, the module is powered on
 	// 4 attempts in total
@@ -76,23 +78,28 @@ uint8_t GPSTracker::getBatteryPercentage(){
 	wdt_reset();
 
 	unsigned long sum = 0;
-	float voltage = 0;
-	uint8_t batteryPercentage;
+	double voltage = 0;
+	int batteryPercentage;
 
 	for (int i = 0; i < 100; i++){
 		sum += analogRead(_batteryPin);
 	}
 
-	voltage = (sum / 100) * (5.0 / 1023.0);
+	voltage = ((sum / 100.0) * 5.0) / 1023.0;
 
-	// Percentage between 4.2 - 3.0
+	DEBUG_PRINT("BATTERY: ");
+	DEBUG_PRINTLN(voltage);
+
+	// Percentage between 4.2 - 3.4
 	batteryPercentage = (voltage - BATTERY_VMIN) * 100 / (BATTERY_VMAX - BATTERY_VMIN);
-
 	if (batteryPercentage > 100) {
 		batteryPercentage = 100;
 	} else if (batteryPercentage < 0){
 		batteryPercentage = 0;
 	}
+
+	DEBUG_PRINT("BATTERY: ");
+	DEBUG_PRINTLN(batteryPercentage);
 
 	return batteryPercentage;
 }

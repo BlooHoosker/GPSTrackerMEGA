@@ -83,7 +83,7 @@ void loop() {
   // Disabling watchdog before sleep mode (sleep mode uses watchdog)
   wdt_disable();
 
-  // Entering idle sleep mode for 8 seconds, wakes up on UART communication
+  // Entering idle 8 times sleep mode for 8 seconds, wakes up on UART communication
   for (uint8_t i = 0; i < 8; i++){
     LowPower.idle(SLEEP_8S, 
                   ADC_OFF, 

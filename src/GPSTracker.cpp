@@ -35,7 +35,16 @@ GPSTracker::GPSTracker(uint8_t SIM_RESET_PIN, uint8_t SIM_PWR_PIN,/* uint8_t SIM
 	_gpsFixStatus = 0;
 	_masterNumberSet = 0;
 	_mapLinkSrc = 0;
+
+	_batteryWarningSent = true; // so it doesnt send sms if battery is low on startup
 	_batteryPercentage = 0;
+
+    for (uint8_t i = 0; i < TRACKER_QUEUE_SIZE; i++){
+		memset(_commandQueue[i], 0, TRACKER_BUFFER_SHORT);
+	}
+    _queueCommandNum = 0;
+    _queueHead = 0;
+    _queueTail = 0;
 }
 
 GPSTracker::~GPSTracker(){}
@@ -168,6 +177,8 @@ bool GPSTracker::init(){
 
 		delay(300);
 	}
+
+	wdt_reset();
 
 	// If module fails to respond with "AT", initialization failed
 	if (!received){

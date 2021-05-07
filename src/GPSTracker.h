@@ -17,24 +17,24 @@
     #define PRINTSTATUS
 #endif
 
-#define TRACKER_BUFFER_LARGE 200
-#define TRACKER_BUFFER_MEDIUM 64
-#define TRACKER_BUFFER_SHORT 32
+#define TRACKER_BUFFER_LARGE 200 ///< Large size for internal buffers
+#define TRACKER_BUFFER_MEDIUM 64 ///< Medium size for internal buffers
+#define TRACKER_BUFFER_SHORT 32 ///< Short (small) size for internal buffers
 
-#define TRACKER_QUEUE_SIZE 4
+#define TRACKER_QUEUE_SIZE 4 ///< Size of queue for new messages
 
-#define TRACKER_BUFFER_DATE 15
-#define TRACKER_BUFFER_TIME 15
+#define TRACKER_BUFFER_DATE 15 ///< buffer size for date
+#define TRACKER_BUFFER_TIME 15 ///< buffer size for time
 
-#define TRACKER_DEFAULT_TIMEOUT 2000
-#define TRACKER_SECOND 1000
+#define TRACKER_DEFAULT_TIMEOUT 2000 ///< default timeout in milliseconds
+#define TRACKER_SECOND 1000 ///< second in milliseconds
 
-#define RESTART_ADDR 0
-#define LINK_SRC_ADDR 1
-#define MASTERSET_ADDR 2
-#define CRC_ADDR 3
-#define LENGTH_ADDR 4
-#define PHONE_NUM_ADDR 5
+#define RESTART_ADDR 0 ///< Address in EEPROM for restart flag
+#define LINK_SRC_ADDR 1 ///< Address in EEPROM for link source flag
+#define MASTERSET_ADDR 2 ///< Address in EEPROM for master number set flag
+#define CRC_ADDR 3 ///< Address in EEPROM for calculated crc of saved phone number
+#define LENGTH_ADDR 4 ///< Address in EEPROM for length of phone number
+#define PHONE_NUM_ADDR 5 ///< Starting address in EEPROM for phone number
 
 class GPSTracker
 {
@@ -120,32 +120,105 @@ public:
 
 private:
 
+    /**
+     * @brief Stream pointer for HardwareSerial or SoftwareSerial class. Used for serial communication with GSM Module.
+     */
     Stream *_serialPort;
+
+    /**
+     * @brief Variable that holds number of digital pin on Arduino that is connected to reset pin on GSM module.
+     */
     uint8_t _resetPin;
+
+     /**
+     * @brief Variable that holds number of digital pin on Arduino that is connected to power pin on GSM module.
+     */
     uint8_t _powerPin;
     //uint8_t _dtrPin;
+
+    /**
+     * @brief Variable that holds number of digital pin on Arduino that is connected to button used for factory reset.
+     */
     uint8_t _buttonPin;
+
+    /**
+     * @brief Variable that holds number of analog pin on Arduino that is connected to battery for voltage measuring.
+     */
     uint8_t _batteryPin;
 
+    /**
+     * @brief Array that holds set master phone number or phone number of last received SMS messsage.
+     */
     char _phoneNumber[TRACKER_BUFFER_SHORT];
+
+    /**
+     * @brief Array that holds last known lattitude.
+     */
     char _latitude[TRACKER_BUFFER_SHORT];
+
+    /**
+     * @brief Array that holds last known longitude.
+     */
     char _longitude[TRACKER_BUFFER_SHORT];
 
-    // 2021-02-18 (10 chars + \0) 23:01:08 (8 chars + \0)
+    /**
+     * @brief Array that holds date of last known position.
+     */
     char _date[TRACKER_BUFFER_DATE];
+
+    /**
+     * @brief Array that holds time of last known position.
+     */
     char _time[TRACKER_BUFFER_TIME];
 
+    /**
+     * @brief 2D Array that represents a circular buffer queue for new received SMS indications when locator is busy.
+     */
     char _commandQueue[TRACKER_QUEUE_SIZE][TRACKER_BUFFER_SHORT];
+
+    /**
+     * @brief Number of SMS indications in queue buffer
+     */
     uint8_t _queueCommandNum;
+
+    /**
+     * @brief Position of the next element to be extracted.
+     */
     uint8_t _queueHead;
+
+    /**
+     * @brief Position of the next free slot.
+     */
     uint8_t _queueTail;
 
+    /**
+     * @brief Current GPS power status
+     */    
     uint8_t _gpsPowerStatus;
+
+    /**
+     * @brief Current GPS fix status.
+     */
     uint8_t _gpsFixStatus;
+
+    /**
+     * @brief Flag that indicates if master number is set.
+     */
     uint8_t _masterNumberSet;
+
+    /**
+     * @brief Flag that indicates which link type should be used.
+     */
     uint8_t _mapLinkSrc;
 
+    /**
+     * @brief Current measured battery percentage.
+     */
     uint8_t _batteryPercentage;
+
+    /**
+     * @brief Flag if SMS warning about low battery was sent.
+     */    
     bool _batteryWarningSent;
 
 

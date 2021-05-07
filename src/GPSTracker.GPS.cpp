@@ -9,6 +9,7 @@ bool GPSTracker::powerGPS(bool on){
         if(!waitFor("OK")) return false;
 
         // Checking if GPS is powered up
+        wdt_reset();
         delay(2*TRACKER_SECOND);
         if (getGPSPowerStatus() != 1) return false;
         
@@ -19,6 +20,7 @@ bool GPSTracker::powerGPS(bool on){
         if(!waitFor("OK")) return false;
 
         // Checking if GPS is powered down
+        wdt_reset();
         delay(2*TRACKER_SECOND);
         if (getGPSPowerStatus() != 0) return false; 
 

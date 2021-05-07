@@ -249,6 +249,7 @@ bool GPSTracker::waitForPromt(uint16_t timeout){
             }
         }
         delay(1);
+        wdt_reset();
         timeout--;
     }
 
