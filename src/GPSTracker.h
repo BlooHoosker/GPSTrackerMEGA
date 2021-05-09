@@ -65,9 +65,15 @@ public:
 
     /**
      * @brief Public recieve method. Waits on AT command sequence from serial
-     * 
      */
     void receive();
+
+    /**
+     * @brief Checks if there are data available on serial port 
+    * @return true data available
+    * @return false no data available
+    */
+    bool available();
 
     /**
      * @brief Checks battery percentage, if bellow 20 % sends warning SMS

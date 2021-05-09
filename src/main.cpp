@@ -61,6 +61,8 @@ void setup() {
 void loop() {
   // Enable watchdog after sleep mode
   wdt_enable(WDTO_8S);
+  
+  tracker.builtInLedOn();
 
   DEBUG_PRINTLN("Receiving...");
 
@@ -83,6 +85,8 @@ void loop() {
   // Disabling watchdog before sleep mode (sleep mode uses watchdog)
   wdt_disable();
 
+  tracker.builtInLedOff();
+
   // Entering idle 8 times sleep mode for 8 seconds, wakes up on UART communication
   for (uint8_t i = 0; i < 8; i++){
     LowPower.idle(SLEEP_8S, 
@@ -102,6 +106,9 @@ void loop() {
       
     // Checking reset button status
     tracker.checkButton();
+
+    // If there are data ready on serial port, exit loop
+    if (tracker.available()) break;
   }
   
 }

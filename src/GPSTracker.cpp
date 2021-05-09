@@ -256,6 +256,10 @@ void GPSTracker::receive(){
   	// }
 }
 
+bool GPSTracker::available(){
+	return (_serialPort->available() == 0) ? false : true; 
+}
+
 void GPSTracker::checkButton(){
 	//wdt_reset();
 
