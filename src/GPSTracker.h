@@ -39,8 +39,15 @@
 class GPSTracker
 {
 public:
-    // Methods for testing
+    
+    /**
+     * @brief Testing method containing all kinds of tests I used during development to test functionality of various methods
+     */
     void test();
+
+    /**
+     * @brief Prints all locator status variables into serial link
+     */
     void printStatus();
 
     /**
@@ -69,7 +76,7 @@ public:
     void receive();
 
     /**
-     * @brief Checks if there are data available on serial port 
+     * @brief Checks if there are data available on serial port used by GSM module
     * @return true data available
     * @return false no data available
     */
