@@ -8,13 +8,17 @@
 #ifdef DEBUG
     #define DEBUG_PRINTLN(s) Serial.println(s);
     #define DEBUG_PRINT(s) Serial.print(s);
-    #define USART0_DISABLE
-    #define PRINTSTATUS tracker.printStatus();
+    #define DEBUG_USART0_DISABLE
+    #define DEBUG_PRINTSTATUS tracker.printStatus();
+    #define DEBUG_USART0 usart0_t::USART0_OFF
+    #define DEBUG_SERIALBEGIN Serial.begin(9600);
 #else
     #define DEBUG_PRINTLN(s)
     #define DEBUG_PRINT(s)
-    #define USART0_DISABLE power_usart0_disable();
-    #define PRINTSTATUS
+    #define DEBUG_USART0_DISABLE power_usart0_disable();
+    #define DEBUG_PRINTSTATUS
+    #define DEBUG_USART0 usart0_t::USART0_ON
+    #define DEBUG_SERIALBEGIN 
 #endif
 
 #define TRACKER_BUFFER_LARGE 200 ///< Large size for internal buffers

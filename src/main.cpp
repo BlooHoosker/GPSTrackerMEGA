@@ -19,11 +19,11 @@ void lowPowerConfig(){
   power_twi_disable();
   power_usart2_disable();
   power_usart3_disable();
-  USART0_DISABLE
+  DEBUG_USART0_DISABLE
 }
 
 void setup() {
-  Serial.begin(9600);
+  DEBUG_SERIALBEGIN
   wdt_enable(WDTO_8S);
 
   // DEBUG_PRINTLN("Testing...");
@@ -78,7 +78,7 @@ void loop() {
   // Checking GSM status
   tracker.checkGSM();
 
-  PRINTSTATUS
+  DEBUG_PRINTSTATUS
   DEBUG_PRINTLN("=====================================================");
   DEBUG_PRINTLN();
 
@@ -101,7 +101,7 @@ void loop() {
                   USART3_ON, 
                   USART2_ON, 
                   USART1_ON, 
-                  USART0_OFF, // change for final release, so it stays off
+                  DEBUG_USART0, // change for final release, so it stays off
                   TWI_ON);
       
     // Checking reset button status
