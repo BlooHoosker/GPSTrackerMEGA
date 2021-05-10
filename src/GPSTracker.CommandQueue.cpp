@@ -1,5 +1,14 @@
 #include <GPSTracker.h>
 
+void GPSTracker::printQueue(){
+    DEBUG_PRINTLN("QUEUE ITEMS:")
+    for (int i = 0; i < TRACKER_QUEUE_SIZE; i++){
+        DEBUG_PRINT(i);
+        DEBUG_PRINT(": ");
+        DEBUG_PRINTLN(_commandQueue[i]);
+    }
+}
+
 void GPSTracker::queueInsert(const char * CMTI){
     wdt_reset();
 
@@ -20,14 +29,6 @@ void GPSTracker::queueInsert(const char * CMTI){
         _queueTail = 0;
     } else {
         _queueTail++;
-    }
-
-    DEBUG_PRINTLN("Queue items:")
-
-    for (int i = 0; i < TRACKER_QUEUE_SIZE; i++){
-        DEBUG_PRINT(i);
-        DEBUG_PRINT(": ");
-        DEBUG_PRINTLN(_commandQueue[i]);
     }
 }
 
@@ -57,13 +58,6 @@ bool GPSTracker::queueExtract(char * CMTI, uint8_t CMTIBufferSize){
         _queueHead = 0;
     } else {
         _queueHead++;
-    }
-
-    DEBUG_PRINTLN("Queue items:")
-    for (int i = 0; i < TRACKER_QUEUE_SIZE; i++){
-        DEBUG_PRINT(i);
-        DEBUG_PRINT(": ");
-        DEBUG_PRINTLN(_commandQueue[i]);
     }
 
     return true;

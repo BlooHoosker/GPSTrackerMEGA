@@ -754,4 +754,9 @@ private:
      * @return false if queue is empty.
      */
     bool queueExtract(char *CMTI, uint8_t CMTIBufferSize);
+
+    /**
+     * @brief Prints queue items to serial
+     */
+    void printQueue();
 };
