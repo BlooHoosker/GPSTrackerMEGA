@@ -127,6 +127,12 @@ void GPSTracker::test(){
 
 	printQueue();
 
+	queueExtract(date, TRACKER_BUFFER_SHORT);
+	DEBUG_PRINT("EXTRACTED: ");
+	DEBUG_PRINTLN(date);
+
+	printQueue();
+
 	queueInsert("Test string 1");
 	queueInsert("Test string 2");
 	queueInsert("Test string 3");
@@ -153,8 +159,7 @@ void GPSTracker::test(){
 	DEBUG_PRINTLN("========== TESTING PHONE NUMBER PARSING ==========");
 
 	char rightNumber[TRACKER_BUFFER_LARGE] = "+CMGR: \"REC READ\",\"+420123456789\",\"\",\"20/12/20,01:59:44+04\"";
-	char badNumber[TRACKER_BUFFER_LARGE] = "+CwdqMGR: \"REC READ\",\"+420123456789\",\"\",\"20/12/20,01:59:44+04\"";
-	char incompleteNumber[TRACKER_BUFFER_LARGE] = "+CMGR: ";
+	char incompleteNumber[TRACKER_BUFFER_LARGE] = "+CMGR: \"REC READ\",\"+420123";
 
 	if (parseSMSPhoneNumber(rightNumber, date, TRACKER_BUFFER_SHORT)){
 		DEBUG_PRINTLN("PHONE NUMBER TEST SUCCESS");
@@ -162,12 +167,6 @@ void GPSTracker::test(){
 		DEBUG_PRINTLN(date);
 	} else {
         DEBUG_PRINTLN("PHONE NUMBER TEST FAILED");
-    }
-
-	if (parseSMSPhoneNumber(badNumber, date, TRACKER_BUFFER_SHORT)){
-		DEBUG_PRINTLN("PHONE NUMBER TEST FAILED");
-	} else {
-        DEBUG_PRINTLN("PHONE NUMBER TEST SUCCESS");
     }
 
 	if (parseSMSPhoneNumber(incompleteNumber, date, TRACKER_BUFFER_SHORT)){
